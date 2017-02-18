@@ -12,7 +12,7 @@
 %\slugcomment{}
 
 \shorttitle{Probabilistic inference of the Hubble parameter}
-\shortauthors{Malz and Peters}
+\shortauthors{Malz and Peters, et al.}
 
 \begin{document}
 
@@ -20,6 +20,10 @@
 
 \author{Alex Malz\altaffilmark{1}}
 \author{Tina Peters\altaffilmark{2}}
+\author{Humna Awan}
+\author{Kara Ponder}
+\author{Lluis Galbany}
+\author{Anita Bahmanyar}
 \altaffiltext{1}{Center for Cosmology and Particle Physics, Department of Physics,
   New York University, 4 Washington Pl., room 424, New York, NY 10003, USA}
  \altaffiltext{2}{Dunlap\dots}
@@ -38,6 +42,30 @@ The BEAMS framework enables the use of probabilistic supernova classifications t
 
 \section{Methods}
 \label{sec:meth}
+
+This covers a complete sample, i.e. a catalog of all $N$ supernovae $ns$ in the universe, ever.  We'll add in the selection function later.
+
+\begin{align}
+p(\vec{\theta}, \textul{\Phi} | \{\textul{\ell}_{n}, \vec{f}_{n}\}_{N}) &\propto p(\vec{\theta}, \textul{\Phi})\ p(\{\textul{\ell}_{n}, \vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi})
+\end{align}
+
+\begin{align}
+p(\{\textul{\ell}_{n}, \vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi}) &= \prod_{n}^{N}p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi})
+\end{align}
+
+\begin{align}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi}) &= \iiint p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\ p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}, \textul{\Phi})\ d\mu_{n}\ dz_{n}\ dT_{n}
+\end{align}
+
+\begin{align}
+T_{n}' &\sim D[\vec{r}(T_{n})]\\
+z_{n}' &\sim U[\textul{\Phi}|_{T_{n}'}]\\
+\mu_{n}' &= \mu(z_{n}', \vec{\theta})
+\end{align}
+
+\begin{align}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*}) &= 
+\end{align}
 
 %\acknowledgments
 
