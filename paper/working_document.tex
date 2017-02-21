@@ -38,12 +38,22 @@ The BEAMS framework enables the use of probabilistic supernova classifications t
 \section{Introduction}
 \label{sec:intro}
 
-\citet{Kelly2008}
+\citet{kunz_bayesian_2007, kelly_flexible_2008}
 
 \section{Methods}
 \label{sec:meth}
 
 This covers a complete sample, i.e. a catalog of all $N$ supernovae $ns$ in the universe, ever.  We'll add in the selection function later.
+
+\vspace{1in}
+\begin{figure}
+\begin{center}
+\includegraphics{Hubble-draft.png}
+%\caption{}
+\label{fig:pgm}
+\end{center}
+\end{figure}
+\vspace{1in}
 
 \begin{align}
 p(\vec{\theta}, \textul{\Phi} | \{\textul{\ell}_{n}, \vec{f}_{n}\}_{N}) &\propto p(\vec{\theta}, \textul{\Phi})\ p(\{\textul{\ell}_{n}, \vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi})
@@ -58,13 +68,40 @@ p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi}) &= \iiint p(\tex
 \end{align}
 
 \begin{align}
-T_{n}' &\sim D[\vec{r}(T_{n})]\\
-z_{n}' &\sim U[\textul{\Phi}|_{T_{n}'}]\\
-\mu_{n}' &= \mu(z_{n}', \vec{\theta})
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}) &= p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\ \frac{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}
 \end{align}
 
 \begin{align}
-p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*}) &= 
+p(\mu_{n}, z_{n}, T_{n}|\textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*}) &= \frac{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})\ p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}{p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})}
+\end{align}
+
+\begin{align}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*}) &= p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\ p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})
+\end{align}
+
+\begin{align}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}) &= \frac{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})}
+\end{align}
+
+\begin{align}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi}) &= \iiint p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\ \frac{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}, \textul{\Phi})}{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})}\ d\mu_{n}\ dz_{n}\ dT_{n}
+\end{align}
+
+\begin{align}
+p(\{\textul{\ell}_{n}, \vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi}) &= \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\ \frac{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}, \textul{\Phi})}{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})}\ d\mu_{n}\ dz_{n}\ dT_{n}
+\end{align}
+
+\begin{align}
+p(\vec{\theta}, \textul{\Phi} | \{\textul{\ell}_{n}, \vec{f}_{n}\}_{N}) &\propto p(\vec{\theta}, \textul{\Phi})\ \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\ \frac{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}, \textul{\Phi})}{p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}^{*}, \textul{\Phi}^{*})}\ d\mu_{n}\ dz_{n}\ dT_{n}
+\end{align}
+
+\section{Data}
+\label{sec:data}
+
+\begin{align}
+T_{n}' &\sim D[\vec{r}(T_{n})]\\
+z_{n}' &\sim \vec{\Phi}(T_{n})\\
+\mu_{n}' &= \mu(z_{n}', \vec{\theta})
 \end{align}
 
 %\acknowledgments
