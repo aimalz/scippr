@@ -45,6 +45,8 @@ The BEAMS framework enables the use of probabilistic supernova classifications t
 
 This covers a complete sample, i.e. a catalog of all $N$ supernovae $ns$ in the universe, ever.  We'll add in the selection function later.
 
+Test reference Fig. \ref{fig:pgm}
+
 \vspace{1in}
 \begin{figure}
 \begin{center}
@@ -122,7 +124,7 @@ This is the posterior we will attempt to sample!
 \section{Data}
 \label{sec:data}
 
-In order to simulate a mock dataset of posterior distributions over supernova type, redshift, and distance modulus, we will have to employ a forward model.
+In order to simulate a mock dataset of posterior distributions $\{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\}_{N}$ over supernova type, redshift, and distance modulus, we will have to employ a forward model.
 
 We will set true values of the hyperparameters $\vec{\theta}_{0}$ and $\textul{\Phi}_{0}$ that we would like to recover by performing hierarchical inference on our mock data.  We will first draw pairs of true parameters $(T_{n}^{0}, z_{n}^{0})$ from $\textul{\Phi}_{0}$.  Then we will calculate the true $\mu_{n}^{0}$ according to [insert distance modulus equation here] from $z_{n}^{0}$ and $\vec{\theta}_{0}$.
 
