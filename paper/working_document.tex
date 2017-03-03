@@ -162,6 +162,15 @@ For each $n$, $p(\textul{\ell}_{n} | \mu_{n}, z_{n}, t_{n})$ will be a $T\times 
 
 Next, we tackle $p(\vec{m}_{n} | z_{n})$, which will be a length $Z$ array $\vec{M}^{n}$, which is the likelihood that forms the basis for what is commonly reported as the photo-$z$ PDF $p(z_{n})$.   We will assume a very simple model for photo-$z$ likelihoods, that of a Gaussian distribution.  We draw a maximum likelihood photo-$z$ $\hat{z}_{n}^{m}$ from the distribution $\mathcal{N}_{z'_{n}, \sigma_{n}^{2}}$.  Then $M^{n}_{\zeta}=\mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta})$.
 
+Finally, in Eq \ref{eq:interimposteriordata}, we put these pieces together to express the form of the individual interim posteriors of the form of Eq. \ref{eq:mockBayes}.
+
+\begin{align}
+\label{eq:interimposteriordata}
+p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= KC_{\tau'_{n}\tau}\mathcal{N}_{(\hat{z}^{\ell}, \hat{\mu}^{\ell}), \textul{\Sigma}_{n}}(z_{\zeta}, \mu_{\nu}) \mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta}) \phi_{\zeta\tau}\delta_{f_{\vec{\theta}}(z_{\zeta})}(\mu_{\nu})
+\end{align}
+
+The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\sum_{\zeta}^{Z}\sum_{\tau}^{T} p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})=1$.
+
 %\clearpage
 %
 %\begin{itemize}
