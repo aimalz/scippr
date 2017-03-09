@@ -26,7 +26,7 @@
 \author{Lluis Galbany}
 \altaffiltext{1}{Center for Cosmology and Particle Physics, Department of Physics,
   New York University, 4 Washington Pl., room 424, New York, NY 10003, USA}
- \altaffiltext{2}{Dunlap\dots}
+ \altaffiltext{2}{Dunlap Institute \& Department of Astronomy and Astrophysics, University of Toronto, 50 St George Street, Toronto, ON M5S 3H4 Canada}
 \email{aimalz@nyu.edu}
 
 \begin{abstract}
@@ -40,6 +40,8 @@ The BEAMS framework enables the use of probabilistic supernova classifications t
 
 \citet{kunz_bayesian_2007, kelly_flexible_2008}
 
+{\bf Add Hlozek 2012: arXiv 1111.5328}
+
 \section{Methods}
 \label{sec:meth}
 
@@ -51,13 +53,15 @@ Test reference Fig. \ref{fig:pgm}
 \begin{figure}
 \begin{center}
 \includegraphics{Hubble-draft.png}
-\caption{This directed acyclic graph corresponds to a probabilistic graphical model for our hierarchical inference of the Hubble parameter.  In this graph, all random variables are shown in circles, with observed variables shown in shaded circles.  The box indicates that there are $N$ copies of the relationships between boxed parameters, each independent of all others.  The hyperparameters we would like to infer are the cosmological parameters in $\vec{theta}$ and the supernova type-redshift distribution parameters comprising $\textul{\Phi}$.  Drawn from functions of these hyperparameters are the distance moduli $\{\mu_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and supernova types $\{T_{n}\}_{N}$.  Here, we observe host galaxy fluxes $\{\vec{f}_{n}\}_{N}$ and multi-band supernova lightcurves $\{\textul{\ell}_{n}\}_{N}$, shown in shaded circles.}
+\caption{This directed acyclic graph corresponds to a probabilistic graphical model for our hierarchical inference of the Hubble parameter.  In this graph, all random variables are shown in circles ({\bf What is meant by "random" here?}), with observed variables shown in shaded circles.  The box indicates that there are $N$ copies of the relationships between boxed parameters, each independent of all others.  The hyperparameters we would like to infer are the cosmological parameters in $\vec{theta}$ and the supernova type-redshift distribution parameters comprising $\textul{\Phi}$.  Drawn from functions of these hyperparameters are the distance moduli $\{\mu_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and supernova types $\{T_{n}\}_{N}$.  Here, we observe host galaxy fluxes $\{\vec{f}_{n}\}_{N}$ and multi-band supernova lightcurves $\{\textul{\ell}_{n}\}_{N}$, shown in shaded circles.}
 \label{fig:pgm}
 \end{center}
 \end{figure}
 \vspace{1in}
 
-The goal here is to constrain the posterior distribution of the hyperparameters of interest given the data, .
+The goal here is to constrain the posterior distribution of the hyperparameters of interest given the data.
+
+{\bf We should give a physical description of what these hyperparameters are: in this case of the Hubble Diagram we are interested in constraining the cosmology so omega matter, omega gamma, and H naut.}
 
 We first expand this in terms of Bayes' Rule.
 
@@ -65,11 +69,17 @@ We first expand this in terms of Bayes' Rule.
 p(\vec{\theta}, \textul{\Phi} | \{\textul{\ell}_{n}\}_{N}, \{\vec{f}_{n}\}_{N}) &\propto p(\vec{\theta}, \textul{\Phi})\ p(\{\textul{\ell}_{n}\}_{N}, \{\vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi})
 \end{align}
 
+{\bf In plain English we are saying that the likelihood of a certain cosmology and the hyperparameters given some set of observed supernova lightcurves and fluxes is proportional to the prior on the cosomological parameters multiplied by the likelihood of the lightcurves and fluxes given the cosmology and hyperparameters.}
+
 Next, we invoke the independence of the supernova parameters and observations; the $n^{th}$ system's parameters and data are assumed to be independent of the $(n+1)^{th}$ system's parameters and data.
+
+{\bf In essence this is saying that each supernova observed is independent of every other supernova observed. Is this a safe assumption? What are the caveats of making this assumption?}
 
 \begin{align}
 p(\{\textul{\ell}_{n}\}_{N}, \{\vec{f}_{n}\}_{N} | \vec{\theta}, \textul{\Phi}) &= \prod_{n}^{N}p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi})
 \end{align}
+
+{\bf This assumption is necessary for us to easily combine the contributions to likelihoods of the individual supernova. Here we are saying the the likelihood of the set of lightcurves and fluxes is simply the product of each of the individual likelihoods.}
 
 Next, we use marginalization of the latent variables, because we do not wish to estimate their values directly.
 
@@ -77,7 +87,9 @@ Next, we use marginalization of the latent variables, because we do not wish to 
 p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\Phi}) &= \iiint p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\ p(\mu_{n}, z_{n}, T_{n} | \vec{\theta}, \textul{\Phi})\ d\mu_{n}\ dz_{n}\ dT_{n}
 \end{align}
 
-We note that the equation calls for likelihoods $\{p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\}_{N}$, but what we have are interim posteriors $\{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\}_{N}$ for some interim priors $\vec{\theta}^{*}, \textul{\Phi}^{*}$.  The interim priors represent the beliefs about the hyperparameters $\vec{\theta}, \textul{\Phi}$ that go into our calculation of the posteriors from the data; whether explicitly chosen (as in methods relying on a template library) or implicitly derived (as in methods relying on a training data set), the interim priors are always present in the calculation of posterior distributions from data.  We will thus have to transform the math to be in terms of quantities we actually have.  We do this by multiplying the likelihood by an inspired factor of unity, in terms of the interim posteriors.
+{\bf Now we expand the expression to include the latent variables, the intermediate values that are not directly measured but calculated from the measured data. In this case are latent variables are distance modulus, redshift, and type the values that we are producing in the simulated data.}
+
+We note that the equation calls for likelihoods $\{p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\}_{N}$ ({\bf the likelihood of a certain measured lightcurve and flux given some distance modulus, redshift, and type.}), but what we have are interim posteriors $\{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\}_{N}$ ({\bf likelihood of some distance modulus, redshift, and type given the lightcurve, flux, and the priors that are used in the fitting of the lightcurve to a suite of templates. This would be a good time to go into a discuss about how lightcurve fitters work.})for some interim priors $\vec{\theta}^{*}, \textul{\Phi}^{*}$.  The interim priors represent the beliefs about the hyperparameters $\vec{\theta}, \textul{\Phi}$ that go into our calculation of the posteriors from the data; whether explicitly chosen (as in methods relying on a template library) or implicitly derived (as in methods relying on a training data set), the interim priors are always present in the calculation of posterior distributions from data.  We will thus have to transform the math to be in terms of quantities we actually have.  We do this by multiplying the likelihood by an inspired factor of unity, in terms of the interim posteriors.
 
 \begin{align}
 p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n}) &= p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, T_{n})\ \frac{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})}
@@ -126,7 +138,9 @@ This is the posterior we will attempt to sample!
 
 In order to simulate a mock dataset of posterior distributions $\{p(\mu_{n}, z_{n}, T_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\Phi}^{*})\}_{N}$ over supernova type, redshift, and distance modulus, we will have to employ a forward model.
 
-We will set true values of the hyperparameters $\vec{\theta}_{0}$ and $\textul{\Phi}_{0}$ that we would like to recover by performing hierarchical inference on our mock data.  We will first draw pairs of true parameters $(T_{n}^{0}, z_{n}^{0})$ from $\textul{\Phi}_{0}$.  Then we will calculate the true $\mu_{n}^{0}$ according to [insert distance modulus equation here] from $z_{n}^{0}$ and $\vec{\theta}_{0}$.
+We will set true values of the hyperparameters *({\bf The generating cosmology of our simulation and what we are trying to recover: e.g. Hnaut, omega matter, omega lambda.})$\vec{\theta}_{0}$ and $\textul{\Phi}_{0}$ ({\bf True type (Ia, Ibc, II) and true redshift of the supernova.})that we would like to recover by performing hierarchical inference on our mock data.  We will first draw pairs of true parameters $(T_{n}^{0}, z_{n}^{0})$ from $\textul{\Phi}_{0}$.  Then we will calculate the true $\mu_{n}^{0}$ according to [insert distance modulus equation here ({\bf astropy.cosmology})] from $z_{n}^{0}$ and $\vec{\theta}_{0}$.
+
+{\bf What does it mean physically to sample from this posterior?  We are marginalizing over mu, z, and type, but that is what is generated by our simulation. We are recovering cosmology given lightcurve and fluxes, but we never model lightcurves and fluxes.}
 
 Next, we will construct likelihoods for each supernova.  Still not sure I'm thinking about this part correctly\dots
 
