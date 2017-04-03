@@ -163,8 +163,11 @@ We will set true values of the hyperparameters *({\bf The generating cosmology o
 
 There are many ways to formulate the various terms in Eqs. \ref{eq:first} and \ref{eq:second}, but we will restrict ourselves to the simplest version for now, outlined below in Sec. \ref{sec:choices}.  
 
-\subsection{Rates based on Supernova Type}
-\label{sec:RatesByType}
+\subsection{Supernova Type Ia Rate with Redshift}
+\label{sec:TypeIaRate}
+
+\subsection{Supernova Type II Rate with Redshift}
+\label{sec:TypeIIRate}
 
 To determine the rate of SNII per unit comoving volume we will basically apply the approach by Forster et al. 2006/Strogler et al. 2004 adapted to SNe II following Botticella et al. 2012.
 
@@ -231,6 +234,19 @@ We use the apparent magnitudes at the end of the plateau phase and k-correct the
 		\includegraphics[width=0.95\textwidth]{number_SNII_withmagntiudescatter.png}
 		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
 		\label{fig:SNII_lc_wz}
+	\end{center}
+\end{figure}
+
+\subsection{Relative Supernova Rates}
+\label{sec:RatesByType}
+
+Supernova rates are calculated by convolving the Delay time distribution with the star formation history. We then set the relative rates of SN Ia and Core Collapse to be 25\% and 75\%, respectively, at z = 0. We use the delay time distribution (DTD) for SN Ia from Graur et al (2013), the delay time distribution (DTD) for SN II from Zapartas et al (2017), and the Cosmic Star Formation Rate from Behroozi et al (2013).
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{relative_supernova_rate.png}
+		\caption{The relative supernova rates as a function of redshift. Sums to one at every redshift.}
+		\label{fig:realtive_supernova_rates}
 	\end{center}
 \end{figure}
 
