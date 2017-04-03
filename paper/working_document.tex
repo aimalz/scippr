@@ -163,6 +163,77 @@ We will set true values of the hyperparameters *({\bf The generating cosmology o
 
 There are many ways to formulate the various terms in Eqs. \ref{eq:first} and \ref{eq:second}, but we will restrict ourselves to the simplest version for now, outlined below in Sec. \ref{sec:choices}.  
 
+\subsection{Rates based on Supernova Type}
+\label{sec:RatesByType}
+
+To determine the rate of SNII per unit comoving volume we will basically apply the approach by Forster et al. 2006/Strogler et al. 2004 adapted to SNe II following Botticella et al. 2012.
+
+The rate of SNe II per unit time per unit comoving volume ($R_{II}$) is given by the star formation rate ($SFR$) per unit time per unit comoving volume convolved with the number of stars crearted that will explode as SNe II.
+
+\begin{align}
+	\label{eq:rateII}
+	R_{II} = K_{II} \times SFR
+\end{align}
+
+First, we must calculate the fraction of stars that explode as SN II:
+
+\begin{align}
+\label{eq:rateII}
+K_{II} = \frac{\int_{m_{l,II}}^{m_{u,II}} \phi(m) \mathrm{d}m}{\int_{m_{l}}^{m_{u}} m\phi(m) \mathrm{d}m}
+\end{align}
+
+When we integrate from a minimum mass, $m_{l,II}$, of 8 to a maximum mass, $m_{u,II}$, to 25 and assuming a Salpeter et al. (1955) IMF we get a rate of $6.027 \time 10^{-3}$.
+
+We will use three different models of how the SFR evolutions with redshift: Cole et al. (2001), Horiuchi et al. (2011), and Madau et al. (2014)
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{SNII_SFR.png}
+		\caption{SFR evolutions with redshift: Cole et al. (2001), Horiuchi et al. (2011), and Madau et al. (2014).}
+		\label{fig:SNII_SFR}
+	\end{center}
+\end{figure}
+
+Next we will take the spectral model of Dessart et al. (2013) which is anchored to SN II 1999em, as a reference. We simulate its $r$-band light curve at different redshifts and convolve it with the LSST filters to see when it falls below the detection limit.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{spectral_model_SNII.png}
+		\caption{SN II spectral model of Dessart et al. (2013): $M_{99em}=-16.6$; $M_{05J}=-17.2$}
+		\label{fig:SNII_lc}
+	\end{center}
+\end{figure}
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{SNII_lc_withz.png}
+		\caption{The $r$-band lightcurve of spectral model of SN II 1999em shifted to a range of redshifts. The horizontal dashed line indicates the limiting magnitude of LSST in the $r$-band in a single visit.}
+		\label{fig:SNII_lc_wz}
+	\end{center}
+\end{figure}
+
+For this model SN II, we compare the magnitude as a function of time and redshift, $m(t,z)$, with the limiting magnitude, $m_{lim}$, of the LSST camera to obtain the probability of detecting (the peak of) a SN at a given redshift, $\Delta_{t}(z)$. Then we estimate the number of detected SNe II per unit of redshift, $dN/dz$, using Equations 2 and 5 of Forster et al. (2006).
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{number_SNII.png}
+		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
+		\label{fig:SNII_lc_wz}
+	\end{center}
+\end{figure}
+
+Finally, we will use a a sample of 10,000 SNe, simulated using MCMC on real parameters of CSP SNe II. We will put each at 100 random redshifts from 0.01 to 1.20, so we will have 1,000,000 SNe. Now we consider the magnitude at the end of the plateau phase, instead of the peak magnitude. This is because in SN II cosmology, we do not standardize the magnitude at peak, but either the magnitude at around the center of the plateau (for spectroscopic methods), or the length/brightness-decline of the plateau (for photometric methods).
+
+We use the apparent magnitudes at the end of the plateau phase and k-correct the magnitudes. Then we measure $\Delta_t(z)$, selecting different magnitude limit depending on the filter we use for observations. Finally, we compare the number of supernovae as a function of redshift for the three different SFR models.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{number_SNII_withmagntiudescatter.png}
+		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
+		\label{fig:SNII_lc_wz}
+	\end{center}
+\end{figure}
+
 \subsection{Model Specifics}
 \label{sec:choices}
 
