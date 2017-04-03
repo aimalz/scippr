@@ -132,6 +132,8 @@ This is the posterior we will attempt to sample!
 \section{Mock Data}
 \label{sec:data}
 
+[Notes: Explain why we're not simulating lightcurves and photometry (hard to do well, requires choosing classifier/fitters that currently don't exist).]
+
 To avoid making an analysis pipeline that depends on the choice of supernova classification lightcurve fitting, and photometric redshift assignment techniques, we create mock data in the form of a catalog of $N$ interim posteriors (indexed by $n$).  To achieve the goal of simulating a mock dataset of three-dimensional posterior distributions over supernova type, redshift, and distance modulus, conditioned on interim prior values of the hyperparameters, we will have to employ a forward model.
 
 \subsection{Choosing the true hyperparameters}
@@ -145,7 +147,7 @@ Supernova rates are calculated by convolving the Delay time distribution with th
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{relative_supernova_rate.png}
+		\includegraphics[width=0.5\textwidth]{relative_supernova_rate.png}
 		\caption{The relative supernova rates as a function of redshift. Sums to one at every redshift.}
 		\label{fig:realtive_supernova_rates}
 	\end{center}
@@ -179,7 +181,7 @@ We will use three different models of how the SFR evolutions with redshift: Cole
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{SNII_SFR.png}
+		\includegraphics[width=0.5\textwidth]{SNII_SFR.png}
 		\caption{SFR evolutions with redshift: Cole et al. (2001), Horiuchi et al. (2011), and Madau et al. (2014).}
 		\label{fig:SNII_SFR}
 	\end{center}
@@ -189,7 +191,7 @@ Next we will take the spectral model of Dessart et al. (2013) which is anchored 
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{spectral_model_SNII.png}
+		\includegraphics[width=0.5\textwidth]{spectral_model_SNII.png}
 		\caption{SN II spectral model of Dessart et al. (2013): $M_{99em}=-16.6$; $M_{05J}=-17.2$}
 		\label{fig:SNII_lc}
 	\end{center}
@@ -197,7 +199,7 @@ Next we will take the spectral model of Dessart et al. (2013) which is anchored 
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{SNII_lc_withz.png}
+		\includegraphics[width=0.5\textwidth]{SNII_lc_withz.png}
 		\caption{The $r$-band lightcurve of spectral model of SN II 1999em shifted to a range of redshifts. The horizontal dashed line indicates the limiting magnitude of LSST in the $r$-band in a single visit.}
 		\label{fig:SNII_lc_wz}
 	\end{center}
@@ -207,7 +209,7 @@ For this model SN II, we compare the magnitude as a function of time and redshif
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{number_SNII.png}
+		\includegraphics[width=0.5\textwidth]{number_SNII.png}
 		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
 		\label{fig:SNII_lc_wz}
 	\end{center}
@@ -219,7 +221,7 @@ We use the apparent magnitudes at the end of the plateau phase and k-correct the
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\textwidth]{number_SNII_withmagntiudescatter.png}
+		\includegraphics[width=0.5\textwidth]{number_SNII_withmagntiudescatter.png}
 		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
 		\label{fig:SNII_lc_wz}
 	\end{center}
@@ -266,7 +268,7 @@ These two terms will be addressed separately in Secs. \ref{sec:likelihoods} and 
 \subsubsection{Creating likelihoods}
 \label{sec:likelihoods}
 
-Now we are ready for a generative model of the likelihoods of lightcurves and galaxy photometry conditioned on the latent parameters.  
+Now we are ready for a generative model of the likelihoods of lightcurves and galaxy photometry conditioned on the latent parameters.  The likelihoods must be made in a self-consistent manner in order to test the inference method.  [Note: I need to explain this more articulately!]  
 
 For each $n$, $p(\textul{\ell}_{n} | \mu_{n}, z_{n}, t_{n})$ will be a $T\times Z\times D$ three-dimensional array $\textul{L}^{n}$.  
 
@@ -280,16 +282,19 @@ Next, we tackle $p(\vec{m}_{n} | z_{n})$, which will be a length $Z$ array $\vec
 
 The overall likelihood of Eq. \ref{eq:first} is simply the product of $L^{n}_{\tau\zeta\nu}$ and $M^{n}_{\zeta}$.
 
+\subsubsection{Incorporating the selection function}
+\label{sec:selection}
+
 \subsubsection{Making interim posteriors}
 \label{sec:posteriors}
 
-To make interim posteriors, we introduce the interim priors of Eq. \ref{eq:second}.  We choose $\vec{\theta}^{*}$ and $\textul{\phi}^{*}$ [specify what a good, general choice would be].  Because the parametrization hasn't changed, the term $p(z_{\zeta}, t_{\tau} | \textul{\phi}^{*})$ takes the simple form of $\phi^{*}_{\tau\zeta}$.  Similarly, $p(\mu_{\nu} | z_{\zeta}, \vec{\theta}^{*})$ will be a delta function $\delta_{f_{\vec{\theta}}(z_{\zeta})}(\mu_{\nu})$.  
+To make interim posteriors, we introduce the interim priors of Eq. \ref{eq:second}.  We choose $\vec{\theta}^{*}$ and $\textul{\phi}^{*}$ [specify what a good, general choice would be].  Because the parametrization hasn't changed, the term $p(z_{\zeta}, t_{\tau} | \textul{\phi}^{*})$ takes the simple form of $\phi^{*}_{\tau\zeta}$.  Similarly, $p(\mu_{\nu} | z_{\zeta}, \vec{\theta}^{*})$ will be a delta function $\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})$.  
 
 Finally, in Eq \ref{eq:interimposteriordata}, we put these pieces together to express the form of the individual interim posteriors of the form of Eq. \ref{eq:mockBayes}.
 
 \begin{align}
 \label{eq:interimposteriordata}
-p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= KC_{\tau'_{n}\tau}\mathcal{N}_{(\hat{z}^{\ell}, \hat{\mu}^{\ell}), \textul{\Sigma}_{n}}(z_{\zeta}, \mu_{\nu}) \mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta}) \phi_{\zeta\tau}\delta_{f_{\vec{\theta}}(z_{\zeta})}(\mu_{\nu})
+p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= KC_{\tau'_{n}\tau}\mathcal{N}_{(\hat{z}^{\ell}, \hat{\mu}^{\ell}), \textul{\Sigma}_{n}}(z_{\zeta}, \mu_{\nu}) \mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta}) \phi^{*}_{\zeta\tau}\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})
 \end{align}
 
 The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\sum_{\zeta}^{Z}\sum_{\tau}^{T} p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})=1$.
