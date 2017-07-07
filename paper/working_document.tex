@@ -8,6 +8,7 @@
 
 \newcommand{\myemail}{aimalz@nyu.edu}
 \newcommand{\textul}{\underline}
+\newcommand{\scippr}{\texttt{scippr}}
 
 %\slugcomment{}
 
@@ -16,21 +17,21 @@
 
 \begin{document}
 
-\title{Probabilistic inference of the Hubble parameter}
+\title{Supernova Cosmology Inference with Probabilistic Photometric Redshifts}
 
 \author{Alex Malz\altaffilmark{1}}
 \author{Tina Peters\altaffilmark{2}}
-\author{Lluis Galbany}
 \author{Humna Awan}
-\author{Anita Bahmanyar}
+\author{Anita Bahmanyar\altaffilmark{2}}
+\author{Lluis Galbany}
+\author{Renee Hlozek\altaffilmark{2}}
 \author{Kara Ponder}
-\altaffiltext{1}{Center for Cosmology and Particle Physics, Department of Physics,
-  New York University, 726 Broadway, 9th floor, New York, NY 10003, USA}
- \altaffiltext{2}{Dunlap Institute \& Department of Astronomy and Astrophysics, University of Toronto, 50 St George Street, Toronto, ON M5S 3H4 Canada}
+\altaffiltext{1}{Center for Cosmology and Particle Physics, Department of Physics, New York University, 726 Broadway, 9th floor, New York, NY 10003, USA}
+\altaffiltext{2}{Dunlap Institute \& Department of Astronomy and Astrophysics, University of Toronto, 50 St George Street, Toronto, ON M5S 3H4 Canada}
 \email{aimalz@nyu.edu}
 
 \begin{abstract}
-The BEAMS framework enables the use of probabilistic supernova classifications to estimate the Hubble parameter quantifying the relationship between distance and redshift over cosmic time.  This work extends BEAMS to replace high-confidence spectroscopic redshifts with probabilistic photometric redshifts, enabling inference of the Hubble parameter as a function of two probabilistic variables.  By combining posterior probabilities of supernova type and posterior probability distributions over host galaxy redshift, we infer a posterior probability distribution over the redshift-dependent Hubble parameter.  This work also produces a code that can be used for other regression problems in astrophysics that involve catalogs of two probabilistic variables.
+The BEAMS framework employs probabilistic supernova classifications to estimate the Hubble parameter that quantifies the relationship between distance and redshift over cosmic time.  This work extends BEAMS to replace high-confidence spectroscopic redshifts with probabilistic photometric redshifts, enabling inference of the Hubble parameter as a function of two probabilistic variables.  By combining posterior probabilities of supernova type and posterior probabilities of host galaxy redshift, we infer a posterior probability distribution over the redshift-dependent Hubble parameter.  This work also produces the \scippr code that can be used to infer cosmological parameters from probabilistic supernova fit parameters.
 \end{abstract}
 
 \keywords{}
@@ -40,24 +41,32 @@ The BEAMS framework enables the use of probabilistic supernova classifications t
 
 \citet{kunz_bayesian_2007, kelly_flexible_2008, hlozek_photometric_2012}
 
-\section{Methods}
+The problem at hand is to infer the cosmological parameters and redshift-dependent supernova type proportions from purely photometric data in the form of supernova lightcurves and host galaxy photometry.
+
+\section{Method}
 \label{sec:meth}
 
-This covers a complete sample, i.e. a catalog of all $N$ supernovae $ns$ in the universe, ever.  We'll add in the selection function later.
+This work demonstrates a principled approach to inferring cosmological parameters and redshift-dependent supernova type proportions from purely photometric lightcurves of supernovae and host galaxy photometry.  First, we outline the notation used throughout this paper.
+
+Let us consider observations of $N$ supernovae $n$, each with a photometric lightcurve $\textul{\ell}_{n}$ and host galaxy photometry $\vec{f}_{n}$ comprised of fluxes, magnitudes, or colors.  When we conduct a photometric survey, not all supernovae in the universe will make it into our sample due to selection effects; we cannot include observations we did not make, nor do we include those with low confidence or insufficiently complete data.  These choices are quantified by nuisance parameters $\vec{\alpha}$ and $\vec{\beta}$ restricting the supernova lightcurves and host galaxy photometry respectively.  
+
+We believe that every supernova has several intrinsic parameters that are not directly observable: a type $t_{n}$, a redshift $z_{n}$, and a distance modulus $\mu_{n}$.   Traditional methods estimate the values of these parameters from observed lightcurves and host galaxy photometry by assuming that the lightcurves and host galaxy photometry are random variables drawn from distributions that are functions of these unobservable parameters.
+ 
+The unobservable parameters, however, are themselves random variables, with type being discrete and redshift and distance modulus being continuous, drawn from distributions that are functions of some hyperparameters.  When we use types, redshifts, and distance moduli to constrain the cosmological parameters and/or redshift-dependent type proportions, we make this very assumption.  As in traditional approaches, we seek to constrain the cosmological parameters comprising $\vec{\Omega}$, among them the Hubble parameter $H_{0}$ and matter density $\Omega_{0}$, and the redshift-dependent type proportions parametrized by $\textul{\phi}$ under some parametrization that need not be specified at this time.  The redshift-dependent type proportions can be thought of as probabilities over type and redshift $p(t, z | \textul{\phi})$.
+
+We introduce a hierarchical Bayesian model for inferring the hyperparameters without estimating the unobservable parameters.  The directed acyclic graph of Fig. \ref{fig:pgm} shows the relationships between the variables discussed above.
 
 \vspace{1in}
 \begin{figure}
 \begin{center}
-\includegraphics{Hubble-draft.png}
-\caption{This directed acyclic graph corresponds to a probabilistic graphical model for our hierarchical inference of the Hubble parameter.  In this graph, all random variables are shown in circles ({\bf What is meant by "random" here?}), with observed variables shown in shaded circles.  The box indicates that there are $N$ copies of the relationships between boxed parameters, each independent of all others.  The hyperparameters we would like to infer are the cosmological parameters in $\vec{theta}$ and the supernova type-redshift distribution parameters comprising $\textul{\phi}$.  Drawn from functions of these hyperparameters are the distance moduli $\{\mu_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and supernova types $\{t_{n}\}_{N}$.  Here, we observe host galaxy colors $\{\vec{m}_{n}\}_{N}$ and multi-band supernova lightcurves $\{\textul{\ell}_{n}\}_{N}$, shown in shaded circles.}
+\includegraphics{pgm.png}
+\caption{This directed acyclic graph corresponds to a probabilistic graphical model for our hierarchical inference of the cosmological parameters and redshift-dependent type proportion parameters.  In this graph, all random variables are shown in circles, with observed variables shown in shaded circles.  The box indicates that there are $N$ copies of the relationships between boxed parameters, each statistically independent of all others.  The hyperparameters we would like to infer are the cosmological parameters in $\vec{\Omega}$ and the redshift-dependent type proportion parameters comprising $\textul{\phi}$.  Drawn from functions of these hyperparameters are the distance moduli $\{\mu_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and supernova types $\{t_{n}\}_{N}$.  Here, we observe host galaxy colors $\{\vec{f}_{n}\}_{N}$ and multi-band supernova lightcurves $\{\textul{\ell}_{n}\}_{N}$, shown in shaded circles.  The solid dots indicate known constants that factor into the model; $\vec{\alpha}$ represents the parameters defining a selection function in the space of observed lightcurves, and $\vec{\beta}$ includes the parameters defining a selection function in the space of host galaxy photometry.}
 \label{fig:pgm}
 \end{center}
 \end{figure}
 \vspace{1in}
 
-The goal here is to constrain the posterior distribution of the hyperparameters of interest given the data.
-
-{\bf We should give a physical description of what these hyperparameters are: in this case of the Hubble Diagram we are interested in constraining the cosmology so omega matter, omega gamma, and H naut.}
+The goal here is to constrain the posterior distribution of the physically important hyperparameters in $\vec{\Omega}$ and $\textul{\phi}$ given a catalog of $N$ photometric lightcurves $\textul{\ell}_{n}$ and host galaxy photometry $\vec{f}_{n}$.  
 
 We first expand this in terms of Bayes' Rule.
 
@@ -233,7 +242,7 @@ We use the apparent magnitudes at the end of the plateau phase and k-correct the
 \subsection{Setting true values of the latent variables}
 \label{sec:true_latents}
 
-To review, the latent variables are the supernova types $\{t_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and distance moduli $\{\mu_{n}\}_{N}$.  There are $T$ types indexed by $\tau$, $Z$ redshift bins indexed by $\zeta$, and $D$ bins in distance modulus indexed by $\nu$.  $\texul{\phi}$ describes 
+To review, the latent variables are the supernova types $\{t_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and distance moduli $\{\mu_{n}\}_{N}$.  There are $T$ types indexed by $\tau$, $Z$ redshift bins indexed by $\zeta$, and $D$ bins in distance modulus indexed by $\nu$.  $\textul{\phi}$ describes 
 
 Because the redshift-dependent supernova type proportions are parametrized by $\textul{\phi}'$ such that $p(z\in\zeta, t=\tau | \textul{\phi}') = \phi_{\zeta\tau}$, it is easy to draw pairs of true types and redshifts $(t_{n}', z_{n}')$ from $\textul{\phi}'$.  We treat the elements of $\textul{\phi}'$ as a discrete distribution, noting that the redshift-dependent supernova type proportions are normalized such that $\sum_{\tau}\int_{\zeta}\textul{\phi}=1$.  Sampling the function defined by $\textul{\phi}'$ is equivalent to sampling true types and redshift bins.  Once the redshift bins have been chosen, we may choose a true redshift for each supernova from a uniform distribution defined between the bin endpoints.  This procedure gives us pairs of true types and redshifts $(t_{n}', z_{n}')$.
 
@@ -301,6 +310,10 @@ p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\the
 
 The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\sum_{\zeta}^{Z}\sum_{\tau}^{T} p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})=1$.
 
+
+
+\section{Validation}
+
 %\clearpage
 %
 %\begin{itemize}
@@ -328,6 +341,10 @@ The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\s
 %z_{n}' &\sim \vec{\Phi}(T_{n})\\
 %\mu_{n}' &= \mu(z_{n}', \vec{\theta})
 %\end{align}
+
+\section{Discussion}
+
+\section{Conclusion}
 
 %\acknowledgments
 
