@@ -50,7 +50,7 @@ The BEAMS framework employs probabilistic supernova classifications to estimate 
 The problem at hand is to infer the cosmological parameters and redshift-dependent supernova type proportions from purely photometric data in the form of supernova lightcurves and host galaxy photometry.
 
 \section{Method}
-\label{sec:meth}
+\label{sec:method}
 
 This work demonstrates a principled approach to inferring cosmological parameters and redshift-dependent supernova type proportions from purely photometric lightcurves of supernovae and host galaxy photometry.  First, we outline the notation used throughout this paper.
 
@@ -60,12 +60,15 @@ We believe that every supernova has several intrinsic parameters that are not di
  
 The unobservable parameters, however, are themselves random variables, with type being discrete and redshift and distance modulus being continuous, drawn from distributions that are functions of some hyperparameters.  When we use types, redshifts, and distance moduli to constrain the cosmological parameters and/or redshift-dependent type proportions, we make this very assumption.  As in traditional approaches, we seek to constrain the cosmological parameters comprising $\vec{\Omega}$, among them the Hubble parameter $H_{0}$ and matter density $\Omega_{0}$, and the redshift-dependent type proportions parametrized by $\textul{\phi}$ under some parametrization that need not be specified at this time.  The redshift-dependent type proportions can be thought of as probabilities over type and redshift $p(t, z | \textul{\phi})$.
 
+\subsection{Model}
+\label{sec:model}
+
 We introduce a hierarchical Bayesian model for inferring the hyperparameters without estimating the unobservable parameters.  The directed acyclic graph of Fig. \ref{fig:pgm} shows the relationships between the variables discussed above.  We assume that the parameters associated with supernova $n$ and its host galaxy are statistically independent of the parameters associated with supernova $n'$ and its host galaxy.
 
 \vspace{1in}
 \begin{figure}
 \begin{center}
-\includegraphics{pgm.png}
+\includegraphics{fig/pgm.png}
 \caption{This directed acyclic graph corresponds to a probabilistic graphical model for our hierarchical inference of the cosmological parameters and redshift-dependent type proportion parameters.  In this graph, all random variables are shown in circles, with observed variables shown in shaded circles.  The box indicates that there are $N$ copies of the relationships between boxed parameters, each statistically independent of all others.  The hyperparameters we would like to infer are the cosmological parameters in $\vec{\Omega}$ and the redshift-dependent type proportion parameters comprising $\textul{\phi}$.  Drawn from functions of these hyperparameters are the distance moduli $\{\mu_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and supernova types $\{t_{n}\}_{N}$.  Here, we observe host galaxy colors $\{\vec{f}_{n}\}_{N}$ and multi-band supernova lightcurves $\{\textul{\ell}_{n}\}_{N}$, shown in shaded circles.  The solid dots indicate known constants that factor into the model; $\vec{\alpha}$ represents the parameters defining a selection function in the space of observed lightcurves, and $\vec{\beta}$ includes the parameters defining a selection function in the space of host galaxy photometry.  The arrows encode the relationships between variables, going from parameters defining probability distributions to variables drawn from those probability distributions.}
 \label{fig:pgm}
 \end{center}
@@ -76,7 +79,7 @@ The motivation for this approach is the existence of photo-$z$ PDFs and the anti
 
 We anticipate the production of lightcurve parameter PDFs, which will also be interim posterior probability distributions, but in a higher dimensional space.  As in the case of photo-$z$ PDFs, the observed multi-band lightcurves $\{\vec{\ell}_{n}\}_{N}$ inform us about the latent parameters of supernova types $\{t_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and distance moduli $\{\mu_{n}\}_{N}$.  The interim prior will be a probability distribution over $t$, $z$, and $\mu$ with known parameters comprising $\textul{\xi}$.  We will also have a lightcurve selection function of parameters $\vec{\alpha}$ that is another distribution over this three-dimensional space.  The overall interim posterior of the supernova lightcurve is then $p(t_{n}, z_{n}, \mu_{n} | \textul{\ell}_{n}, \textul{\xi}, \vec{\alpha})$.
 
-\textbf{(Perhaps discuss interim priors and selection functions in more detail here.)}
+\textbf{(@aimalz Discuss interim priors and selection functions in more detail here, or somewhere else?)}
 
 The goal here is to constrain the posterior distribution $p(\vec{\Omega}, \textul{\phi} | \{\textul{\ell}_{n}\}_{N}, \{\vec{f}_{n}\}_{N})$ of the physically important hyperparameters in $\vec{\Omega}$ and $\textul{\phi}$ given a catalog of $N$ interim posterior distributions $p(t_{n}, z_{n}, \mu_{n} | \textul{\ell}_{n}, \textul{\xi}, \vec{\alpha})$ and another $N$ interim posterior distributions $p(z_{n} | \vec{f}_{n}, \vec{\theta}, \vec{\beta})$.  We will derive an expression for the posterior distribution over hyperparameters that we want to find in terms of the interim posteriors over latent parameters that are available to us.
 
@@ -111,76 +114,93 @@ We expand the denominator of that factor of unity according to Bayes' Rule.
 \label{eq:expand}
 p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n}) &= p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n},\vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})\ p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})\ p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}
 \end{align}
-
-By the independence of different hierarchical levels in the probabilistic graphical model, we may split up the most daunting term in the above expression.
-
+By the independence of the hierarchical levels in the probabilistic graphical model, we may split up the most daunting term in the above expression as
 \begin{align}
-p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n})\ p(\textul{\ell}_{n}, \vec{m}_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})
+\label{eq:breakdown}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta}) &= p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n})\ p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta}).
 \end{align}
-
-Noting the presence of $p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n})$ and $p(\textul{\ell}_{n}, \vec{m}_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})$ in both the numerator and denominator for $p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n})$, we cancel the like terms to express the individual likelihoods in terms of known quantities.
-
+Noting the presence of $p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n})$ and $p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})$ in both the numerator and denominator for $p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n})$, we cancel the like terms to express the individual likelihoods in terms of known quantities, obtaining
 \begin{align}
-p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n}) &= \frac{p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})}
+\label{eq:cancellation}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \mu_{n}, z_{n}, t_{n}) &= \frac{p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}.
 \end{align}
-
-We are now ready to plug the individual likelihoods into the marginalization.
-
+We are now ready to plug the individual likelihoods into Eq. \ref{eq:marginalization}, leading to
 \begin{align}
-p(\textul{\ell}_{n}, \vec{m}_{n} | \vec{\theta}, \textul{\phi}) &= \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})}\ d\mu_{n}\ dz_{n}\ dt_{n}
+\label{eq:buildup}
+p(\textul{\ell}_{n}, \vec{f}_{n} | \vec{\theta}, \textul{\phi}) &= \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})}\ d\mu_{n}\ dz_{n}\ dt_{n}
 \end{align}
-
-Now we can plug the marginalization back into the product.
-
+Finally, we plug Eq. \ref{eq:buildup} back into Eq. \ref{eq:independence}.
 \begin{align}
-p(\{\textul{\ell}_{n}, \vec{m}_{n}\}_{N} | \vec{\theta}, \textul{\phi}) &= \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})}\ d\mu_{n}\ dz_{n}\ dt_{n}
+\label{eq:plugin}
+p(\{\textul{\ell}_{n}, \vec{f}_{n}\}_{N} | \vec{\Omega}, \textul{\phi}) &= \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\Omega}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}\ d\mu_{n}\ dz_{n}\ dt_{n}
 \end{align}
-
-And finally, we can plug the product back into Bayes' Rule.
-
+And finally, we plug the product back into Eq. \ref{eq:bayes} to obtain
 \begin{align}
-p(\vec{\theta}, \textul{\phi} | \{\textul{\ell}_{n}, \vec{m}_{n}\}_{N}) &\propto p(\vec{\theta}, \textul{\phi})\ \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})}\ d\mu_{n}\ dz_{n}\ dt_{n}
+\label{eq:wrapup}
+p(\vec{\Omega}, \textul{\phi} | \{\textul{\ell}_{n}, \vec{f}_{n}\}_{N}) &\propto p(\vec{\Omega}, \textul{\phi})\ \prod_{n}^{N}\ \iiint p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})\ \frac{p(\mu_{n}, z_{n}, t_{n} | \vec{\Omega}, \textul{\phi})}{p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})}\ d\mu_{n}\ dz_{n}\ dt_{n},
 \end{align}
-
-This is the posterior we will attempt to sample!
+the posterior on cosmological parameters and redshift-dependent type proportions that we wish to sample.
 
 It is very important to document the assumptions we make with this model:
 \begin{enumerate}
+	\item\label{it:completeness} The expression of Eq. \ref{eq:wrapup} is only as correct as the probabilistic graphical model of Fig. \ref{fig:pgm} is complete.
+	\item\label{it:prior} We must choose a prior probability distribution $p(\vec{Omega}, \textul{\phi})$.
 	\item\label{it:interimpriors} The interim prior parameters $\vec{\theta}$ and $\textul{\xi}$ are known and shared among all supernovae $n$.
 	\item\label{it:selectionfunctions} The selection function parameters $\vec{\beta}$ and $\textul{\alpha}$ are known and shared among all supernovae $n$.
 	\item\label{it:independence} All latent and observed parameters associated with the supernovae and their host galaxies are statistically independent from the latent and observed parameters of all other supernovae and their host galaxies.
-	\item The interim posterior distributions $\{p(z_{n} | \vec{f}_{n}, \vec{\theta}, \vec{\beta})\}_{N}$ and $\{p(t_{n}, z_{n}, \mu_{n} | \textul{\ell}_{n}, \textul{\xi}, \vec{\alpha})\}_{N}$ are accurate.
+	\item\label{it:accuracy} The interim posterior distributions $\{p(z_{n} | \vec{f}_{n}, \vec{\theta}, \vec{\beta})\}_{N}$ and $\{p(t_{n}, z_{n}, \mu_{n} | \textul{\ell}_{n}, \textul{\xi}, \vec{\alpha})\}_{N}$ are accurate.
 \end{enumerate}
-There are a few caveats to these assumptions.  It is noted that this model may be adapted to the cases when Items \ref{it:interimpriors} and \ref{it:selectionfunctions} are violated, which will be the case if the interim posteriors are not derived by a single method or if the photometry comes from a combination of surveys.  Item \ref{it:independence} is never truly valid in that all data observed by a single instrument are correlated, for example, but if the data primarily inform us about the phenomenon in question and we believe the principle of the universality of physics, it is a safe assumption; furthermore, virtually no statistical analysis would be possible without it, so all alternative methods already make this assumption.
+There are a few caveats to these assumptions.  
 
+Item \ref{it:completeness} is present with any approach, as no model can include every aspect of the physics -- to make any problem tractable, we must make simplifications.  The hierarchical Bayesian approach, however, easily accommodates complications so is extensible to more refined models.
 
+Skeptics of Bayesian statistics often cite item \ref{it:prior} as a major weakness of this approach.  It is true that choosing a prior distribution can impart a bias on the resulting inference, but it can be an advantage when the data quality is poor and there are already trustworthy constraints on the parameters in question.  We will nonetheless try to minimize the information imparted to the posterior by the prior.
+
+It is noted that this model may be adapted to the cases when Items \ref{it:interimpriors} and \ref{it:selectionfunctions} are violated, which will be the case if the interim posteriors are not derived by a single method or if the photometry comes from a combination of surveys.  
+
+Item \ref{it:independence} is never truly valid in that all data observed by a single instrument are correlated, for example, but if the data primarily inform us about the phenomenon in question and we believe the principle of the universality of physics, it is a safe assumption; furthermore, virtually no statistical analysis would be possible without it, so all alternative methods already make this assumption.
+
+It may seem to go without saying, but Item \ref{it:accuracy} can be difficult to guarantee.  As will be discussed further in Sec. \ref{sec:data}, there is as yet no established method for producing the interim posterior distributions, and validating any such method's accuracy will be a challenge, as it has proven to be for photo-$z$ PDFs.
+
+We implement the model of Sec. \ref{sec:model} in the form of the Supernova Cosmology Inference with Probabilistic Photometric Redshifts code \scippr, which is a \texttt{Python} code freely available to the community.
 
 \section{Mock Data}
 \label{sec:data}
 
-[Notes: Explain why we're not simulating lightcurves and photometry (hard to do well, requires choosing classifier/fitters that currently don't exist).]
+The mock data used to validate this method is unusual in that joint interim posteriors over supernova type, redshift, and distance modulus have never before been made.  This paper does not approach the problem of how to produce this data product because doing so would require us to make many more assumptions that could limit the impact of this work.  As was mentioned in Sec. \ref{sec:model}, it is nontrivial to confirm the accuracy of any probabilistic data analysis method.  Doing so would require painstaking simulations of lightcurves and host galaxy photometry as well as a choice of lightcurve fitting scheme, and the method presented here would then depend on these being correct.  If the mock data consists of interim posteriors, we can verify their self-consistency with our knowledge of the selection functions and interim priors by way of a rigorous forward model.  For these reasons, we will assume that the data product in hand is a catalog of three-dimensional interim posteriors $\{p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}, \textul{\phi}, \vec{\alpha}, \vec{\beta})\}_{N}$.
 
-To avoid making an analysis pipeline that depends on the choice of supernova classification lightcurve fitting, and photometric redshift assignment techniques, we create mock data in the form of a catalog of $N$ interim posteriors (indexed by $n$).  To achieve the goal of simulating a mock dataset of three-dimensional posterior distributions over supernova type, redshift, and distance modulus, conditioned on interim prior values of the hyperparameters, we will have to employ a forward model.
+In this section, we outline the forward model by which the mock interim posteriors are generated.  The following subsections explain the choices made in our validation tests.  From this point on, we will only work with log-probability distributions
 
-\subsection{Choosing the true hyperparameters}
+\subsection{The true hyperparameters and parameters}
 \label{sec:true_hypers}
 
-We begin by setting true values of the hyperparameters.  $\vec{\theta}$ represents the generating cosmology of our simulation, a vector comprised of $\Omega_{\Lambda}$, $\Omega_{m}$, $H_{0}$, etc.  We choose the true cosmological parameters comprising $\vec{\theta}'$ to be those observed by [choose a well-accepted survey's results and give the elements of the vector in a table].  
+We begin by choosing parametrizations for the hyperparameters.  We must have some functions of the hyperparameters producing a distribution from which the supernova type, redshift, and distance modulus are drawn.  
 
-$\textul{\phi}$ represents the parameters defining the supernova type proportions as a function of redshift, which we choose to be a $T\times Z$ dimensional matrix for a space with $T$ possible supernova types $\tau$ and $Z$ redshift bins $\zeta$ of widths $\vec{\Delta}_{z}$, where each element of $\phi_{\tau\zeta}$ is the probability density associated with a supernova of type $\tau$ with a redshift in bin $\zeta$; thus we have $p(z_{\zeta}, t_{\tau} | \textul{\phi}) \equiv \phi_{\zeta\tau}$, with $\textul{\phi}$ satisfying the normalization condition $\sum_{\tau=1}^{T}\textul{\phi}\cdot\vec{\Delta}_{z}=1$.  We proceed to choose a physically motivated true matrix of redshift-dependent supernova type proportions $\textul{\phi}'$.
+For the redshift-dependent type proportions, we choose $p(t, z | \textul{\phi})$ to be a two-dimensional piecewise constant function over $T$ types and $Z$ redshift bins, making $\textul{\phi}$ a $T\times Z$ array with values $\phi_{i}$ equal to the probability of a supernova having the given type with a redshift in a given bin.  A normalization condition is enforced such that summing over the discrete variable of supernova type and integrating over all redshift bins yields a value of unity.  
 
-Supernova rates are calculated by convolving the Delay time distribution with the star formation history. We then set the relative rates of SN Ia and Core Collapse to be 25\% and 75\%, respectively, at z = 0. We use the delay time distribution (DTD) for SN Ia from Graur et al (2013), the delay time distribution (DTD) for SN II from Zapartas et al (2017), and the Cosmic Star Formation Rate from Behroozi et al (2013).
+To demonstrate that \scippr is an extension of BEAMS, we consider $T=3$, with $\tau\in\{Ia, Ibc, II\}$.  Under this parametrization, we use realistic values for the elements of $\textul{\phi}'$ derived by convolving the delay time distribution (DTD) and the star formation history.  This procedure is outlined in Secs. \ref{sec:TypeIaRate}, \ref{sec:TypeIbcRate}, and \ref{sec:TypeIIRate}.  As an overview, we set the relative rates of SN Ia and Core Collapse to be 25\% and 75\%, respectively, at z = 0.  \textbf{(@tinapeters How were these numbers modified for three SN populations?)}  We use the DTD for SN Ia from Graur et al (2013) and the DTD for SN II from Zapartas et al (2017), and the Cosmic Star Formation Rate from Behroozi et al (2013).  \textbf{(@tinapeters Put these references into the .bib file.)}  The redshift-dependent supernova type proportions derived in this way are shown in Fig. \ref{fig:relative_supernova_rates}.  \textbf{(@tinapeters What is the native format of these curves, i.e. a continuous function evaluated on a grid or something else?  I wrote about a piecewise constant function, but it can and should be whatever's consistent with the actual functions you calculated.)}  $N=10^{4}$ pairs of $(t'_{n}, z'_{n})$ are drawn from this distribution.
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{relative_supernova_rate.png}
-		\caption{The relative supernova rates as a function of redshift. Sums to one at every redshift.}
-		\label{fig:realtive_supernova_rates}
+		\includegraphics[width=0.5\textwidth]{fig/relative_supernova_rate.png}
+		\caption{The relative supernova rates as a function of redshift. Sums to one at every redshift (but should actually integrate to one over type and redshift).  \textbf{(@aimalz Also plot the "observed" version of this for our sample)}}
+		\label{fig:relative_supernova_rates}
 	\end{center}
 \end{figure}
 
+For the parametrization of the cosmological parameters, we assume a $\Lambda$CDM cosmology so $\vec{\Omega}$ is comprised of $H_{0}$, $\Omega_{m}$, etc.  We choose the true cosmological parameters comprising $\vec{\Omega}'$ to be the maximum likelihood point estimates observed by Planck: $H_{0}=67.9\ Mpc/km/s$ and $\Omega_{m}=0.307$.  \textbf{(@aimalz fix these constants here and in code)}  The function that produces $\mu$ from a given $z_{n}$ is 
+\begin{align}
+\label{eq:distmod}
+\mu &= 5\log\left[(1+z)\frac{1}{10\ pc}\int_{0}^{z}\frac{dz'}{\sqrt{\Omega_{M}(1+z)^{3}+\Omega_{k}(1+z)^{2}+\Omega_{\Lambda}}}\right].
+\end{align}
+This means that once the pair $(t'_{n}, z'_{n})$ is drawn from $p(t, z | \textul{\phi}')$, $p(\mu_{n} | \vec{\Omega}', z')$ is a delta function centered at $\mu'_{n}$ following Eq. \ref{eq:distmod}.  We have now set the true values of the hyperparameters and parameters
+% $\textul{\phi}$ represents the parameters defining the supernova type proportions as a function of redshift, which we choose to be a $T\times Z$ dimensional matrix for a space with $T$ possible supernova types $\tau$ and $Z$ redshift bins $\zeta$ of widths $\vec{\Delta}_{z}$, where each element of $\phi_{\tau\zeta}$ is the probability density associated with a supernova of type $\tau$ with a redshift in bin $\zeta$; thus we have $p(z_{\zeta}, t_{\tau} | \textul{\phi}) \equiv \phi_{\zeta\tau}$, with $\textul{\phi}$ satisfying the normalization condition $\sum_{\tau=1}^{T}\textul{\phi}\cdot\vec{\Delta}_{z}=1$.  We proceed to choose a physically motivated true matrix of redshift-dependent supernova type proportions $\textul{\phi}'$.
+
 \subsubsection{Supernova Type Ia Rate with Redshift}
 \label{sec:TypeIaRate}
+
+\subsubsection{Supernova Type Ibc Rate with Redshift}
+\label{sec:TypeIbcRate}
 
 \subsubsection{Supernova Type II Rate with Redshift}
 \label{sec:TypeIIRate}
@@ -190,14 +210,14 @@ To determine the rate of SNII per unit comoving volume we will basically apply t
 The rate of SNe II per unit time per unit comoving volume ($R_{II}$) is given by the star formation rate ($SFR$) per unit time per unit comoving volume convolved with the number of stars crearted that will explode as SNe II.
 
 \begin{align}
-	\label{eq:rateII}
+	\label{eq:rateII_1}
 	R_{II} = K_{II} \times SFR
 \end{align}
 
 First, we must calculate the fraction of stars that explode as SN II:
 
 \begin{align}
-\label{eq:rateII}
+\label{eq:rateII_2}
 K_{II} = \frac{\int_{m_{l,II}}^{m_{u,II}} \phi(m) \mathrm{d}m}{\int_{m_{l}}^{m_{u}} m\phi(m) \mathrm{d}m}
 \end{align}
 
@@ -207,7 +227,7 @@ We will use three different models of how the SFR evolutions with redshift: Cole
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{SNII_SFR.png}
+		\includegraphics[width=0.5\textwidth]{fig/SNII_SFR.png}
 		\caption{SFR evolutions with redshift: Cole et al. (2001), Horiuchi et al. (2011), and Madau et al. (2014).}
 		\label{fig:SNII_SFR}
 	\end{center}
@@ -217,7 +237,7 @@ Next we will take the spectral model of Dessart et al. (2013) which is anchored 
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{spectral_model_SNII.png}
+		\includegraphics[width=0.5\textwidth]{fig/spectral_model_SNII.png}
 		\caption{SN II spectral model of Dessart et al. (2013): $M_{99em}=-16.6$; $M_{05J}=-17.2$}
 		\label{fig:SNII_lc}
 	\end{center}
@@ -225,9 +245,9 @@ Next we will take the spectral model of Dessart et al. (2013) which is anchored 
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{SNII_lc_withz.png}
+		\includegraphics[width=0.5\textwidth]{fig/SNII_lc_withz.png}
 		\caption{The $r$-band lightcurve of spectral model of SN II 1999em shifted to a range of redshifts. The horizontal dashed line indicates the limiting magnitude of LSST in the $r$-band in a single visit.}
-		\label{fig:SNII_lc_wz}
+		\label{fig:SNII_lc_withz}
 	\end{center}
 \end{figure}
 
@@ -235,9 +255,9 @@ For this model SN II, we compare the magnitude as a function of time and redshif
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{number_SNII.png}
+		\includegraphics[width=0.5\textwidth]{fig/number_SNII.png}
 		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
-		\label{fig:SNII_lc_wz}
+		\label{fig:SNII_lc_sfr}
 	\end{center}
 \end{figure}
 
@@ -247,56 +267,76 @@ We use the apparent magnitudes at the end of the plateau phase and k-correct the
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{number_SNII_withmagntiudescatter.png}
+		\includegraphics[width=0.5\textwidth]{fig/number_SNII_withmagntiudescatter.png}
 		\caption{The number of SN II detected, for each of the SFR models, as a function of redshift. The total number of SN II for Horiuchi et al. 16985, Cole et al. 29207, and Madau et al.  18322. }
 		\label{fig:SNII_lc_wz}
 	\end{center}
 \end{figure}
-
-\subsubsection{Supernova Type Ibc Rate with Redshift}
-\label{sec:TypeIbcRate}
  
-\subsection{Setting true values of the latent variables}
-\label{sec:true_latents}
-
-To review, the latent variables are the supernova types $\{t_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and distance moduli $\{\mu_{n}\}_{N}$.  There are $T$ types indexed by $\tau$, $Z$ redshift bins indexed by $\zeta$, and $D$ bins in distance modulus indexed by $\nu$.  $\textul{\phi}$ describes 
-
-Because the redshift-dependent supernova type proportions are parametrized by $\textul{\phi}'$ such that $p(z\in\zeta, t=\tau | \textul{\phi}') = \phi_{\zeta\tau}$, it is easy to draw pairs of true types and redshifts $(t_{n}', z_{n}')$ from $\textul{\phi}'$.  We treat the elements of $\textul{\phi}'$ as a discrete distribution, noting that the redshift-dependent supernova type proportions are normalized such that $\sum_{\tau}\int_{\zeta}\textul{\phi}=1$.  Sampling the function defined by $\textul{\phi}'$ is equivalent to sampling true types and redshift bins.  Once the redshift bins have been chosen, we may choose a true redshift for each supernova from a uniform distribution defined between the bin endpoints.  This procedure gives us pairs of true types and redshifts $(t_{n}', z_{n}')$.
-
-Finally, we calculate the true $\mu_{n}'$ according to [insert distance modulus equation from astropy.cosmology here] from $z_{n}'$ and $\vec{\theta}'$.  Rather than writing the form of the distance modulus as a function of redshift and cosmological parameters throughout the paper, we will instead use the shorthand $\mu = f_{\vec{\theta}}(z)$ here.  This results in a true catalog of length $N$ consisting of trios $(t_{n}', z_{n}', \mu_{n}')$ of the latent variables.
+% \subsection{Setting true values of the latent variables}
+% \label{sec:true_latents}
+%
+% To review, the latent variables are the supernova types $\{t_{n}\}_{N}$, redshifts $\{z_{n}\}_{N}$, and distance moduli $\{\mu_{n}\}_{N}$.  Now we must set a parametrization on the probability distributions $p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n})$.  For the supernova type and redshift dimensions, we adopt the same parametrization used for $\textul{\phi}$.  There are $T$ supernova types and $Z$ redshift bins, indexed by $\tau$ and $\zeta$ respectively/  W, and $D$ bins in distance modulus indexed by $\nu$.  $\textul{\phi}$ describes 
+%
+% Because the redshift-dependent supernova type proportions are parametrized by $\textul{\phi}'$ such that $p(z\in\zeta, t=\tau | \textul{\phi}') = \phi_{\zeta\tau}$, it is easy to draw pairs of true types and redshifts $(t_{n}', z_{n}')$ from $\textul{\phi}'$.  We treat the elements of $\textul{\phi}'$ as a discrete distribution, noting that the redshift-dependent supernova type proportions are normalized such that $\sum_{\tau}\int_{\zeta}\textul{\phi}=1$.  Sampling the function defined by $\textul{\phi}'$ is equivalent to sampling true types and redshift bins.  Once the redshift bins have been chosen, we may choose a true redshift for each supernova from a uniform distribution defined between the bin endpoints.  This procedure gives us pairs of true types and redshifts $(t_{n}', z_{n}')$.
+%
+% Finally, we calculate the true $\mu_{n}'$ according to [insert distance modulus equation from astropy.cosmology here] from $z_{n}'$ and $\vec{\theta}'$.  Rather than writing the form of the distance modulus as a function of redshift and cosmological parameters throughout the paper, we will instead use the shorthand $\mu = f_{\vec{\theta}}(z)$ here.  This results in a true catalog of length $N$ consisting of trios $(t_{n}', z_{n}', \mu_{n}')$ of the latent variables.
 
 \subsection{Constructing PDFs}
 \label{sec:pdfs}
 
-The catalog of trios of true latent variables in the catalog must be transformed into three-dimensional probability distribution functions (PDFs) over these three variables.  We extend the binned parametrization of $\textul{\phi}$ chosen in Sec. \ref{sec:true_hypers}.  In addition to dimensions for $T$ types and $Z$ redshift bins, the PDFs have an additional dimension of $D$ distance modulus bins $\nu$ of widths $\vec{\Delta}_{\mu}$.  
+The catalog of trios of true latent variables must be transformed into three-dimensional probability distribution functions (PDFs) over these three variables.  To improve the efficiency of \scippr, we use a binned parametrization for the PDFs $p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}, \vec{\theta}, \textul{\xi}, \vec{\alpha}, \vec{\beta})$ so that the mathematical manipulations of the PDFs are simple operations on arrays.  This choice is made at the level of writing code, not something intrinsic to the model.  For these tests, we use $J=20$ equally spaced bins in redshift and $K=20$ equally spaced bins in distance modulus.  We construct the PDFs from simple components described in the following sections.  This process is guided by the graphical model of Fig. \ref{fig:pgm}.
 
-Since we are aiming to construct posteriors, we know from Bayes' Rule that they will take the form of Eq. \ref{eq:mockBayes}.
+% We will discuss the two terms separately. The first term of Eq. \ref{eq:mockBayes} may easily be reduced to $p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n})$, as there is no direct dependence of the data on the hyperparameters.  Fig. \ref{fig:pgm} tells us how to break it up, resulting in Eq. \ref{eq:first}.
+%
+% \begin{align}
+% \label{eq:first}
+% p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n}) &= p(\textul{\ell}_{n} | \mu_{n}, z_{n}, t_{n})\ p(\vec{m}_{n} | z_{n})
+% \end{align}
+%
+% According to Fig. \ref{fig:pgm}, we have Eq. \ref{eq:second}.
+%
+% \begin{align}
+% \label{eq:second}
+% p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*}) &= p(\mu_{n} | z_{n}, \vec{\theta}^{*})\ p(z_{n}, t_{n} | \textul{\phi}^{*})
+% \end{align}
+%
+% These two terms will be addressed separately in Secs. \ref{sec:likelihoods} and \ref{sec:posteriors}.
 
+\subsubsection{Creating posteriors}
+\label{sec:posteriors}
+
+The first components we must construct are the posterior distributions $p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n})$.  We note the statistical independence of $\textul{\ell}_{n}$ and $\vec{f}_{n}$, as there are no direct connections between them in Fig. \ref{fig:pgm}.  Furthermore, while the supernova lightcurve is a function of all three latent variables, the host galaxy photometry is independent of the distance modulus and supernova type according to the model of Fig. \ref{fig:pgm}.  (Though there is some evidence against this assumption, the details of any potential relationship have not yet been determined well enough to model, so we do not include this effect at this time.)  Because of these instances of independence, we may decompose the posterior as
 \begin{align}
-\label{eq:mockBayes}
-p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &\propto p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})\ p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*})
+\label{eq:posteriors_decompose}
+p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}) &= p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n})\ p(z_{n} | \vec{f}_{n}).
+\end{align}
+We construct these terms without simulating supernova lightcurves nor host galaxy photometry.  The true supernova types, redshifts, and distance moduli serve as a proxy for the information that would be carried by the observed data; in other words, we are saying
+\begin{align}
+\label{eq:posteriors_emulate}
+p(\mu_{n}, z_{n}, t_{n} | \textul{\ell}_{n}, \vec{f}_{n}) &= p(\mu_{n}, z_{n}, t_{n} | \mu'_{n}, z'_{n}, t'_{n})\ p(z_{n} | z'_{n}).
+\end{align}
+We thus emulate the desired posteriors based on our understanding of the forward model of point estimates of these quantities.
+
+We first approach the second term, the photo-$z$ posterior.  The piecewise constant parametrization is flexible enough to accommodate many shapes for the redshift posterior, but for now, we assume it is a binned Gaussian distribution with a variance $\sigma_{f}^{2}$ shared by the entire dataset and a mean of $z''_{n}$ drawn from a Gaussian distribution of the same variance with a mean of $z'_{n}$, the true redshift.  Examples of these photo-$z$ posteriors are shown in Fig. \ref{fig:pzs}.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.5\textwidth]{fig/host_likelihoods.png}
+		\caption{These are examples of mock photo-$z$ posteriors.  \textbf{(@aimalz Change these to plot as piecewise constant.)}}
+		\label{fig:pzs}
+	\end{center}
+\end{figure}
+
+The first term is more challenging due to its higher dimensionality.  We are modeling the expected product of a probabilistic lightcurve fitter that gives a joint probability distribution over supernova type, redshift, and distance modulus.  As this is an emulation procedure, rather than a simulation, we construct the desired quantity using an understanding of how a lightcurve fitter works.  Depending on the type of supernova, a different fitting function is used, so typically a classifier is run on the lightcurves first, and then that information is fed into a lightcurve fitter.  This is equivalent to
+\begin{align}
+\label{eq:lc_fit_model}
+p(\mu_{n}, z_{n}, t_{n} | \mu'_{n}, z'_{n}, t'_{n}) &= p(t_{n} | t'_{n})\ p(\mu_{n}, z_{n} | \mu'_{n}, z'_{n}, t'_{n}, t_{n}).
 \end{align}
 
-We will discuss the two terms separately. The first term of Eq. \ref{eq:mockBayes} may easily be reduced to $p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n})$, as there is no direct dependence of the data on the hyperparameters.  Fig. \ref{fig:pgm} tells us how to break it up, resulting in Eq. \ref{eq:first}.
+The quantity $p(t_{n} | t'_{n})$ is a $T\times T$ function known as the confusion matrix, in which each cell is the probability of a supernova's classified type given its true type, evaluated at the true type $t'_{n}$ of supernova $n$.
 
-\begin{align}
-\label{eq:first}
-p(\textul{\ell}_{n}, \vec{m}_{n} | \mu_{n}, z_{n}, t_{n}) &= p(\textul{\ell}_{n} | \mu_{n}, z_{n}, t_{n})\ p(\vec{m}_{n} | z_{n})
-\end{align}
 
- According to Fig. \ref{fig:pgm}, we have Eq. \ref{eq:second}.
-
-\begin{align}
-\label{eq:second}
-p(\mu_{n}, z_{n}, t_{n} | \vec{\theta}^{*}, \textul{\phi}^{*}) &= p(\mu_{n} | z_{n}, \vec{\theta}^{*})\ p(z_{n}, t_{n} | \textul{\phi}^{*})
-\end{align}
-
-These two terms will be addressed separately in Secs. \ref{sec:likelihoods} and \ref{sec:posteriors}.
-
-\subsubsection{Creating likelihoods}
-\label{sec:likelihoods}
-
-Now we are ready for a generative model of the likelihoods of lightcurves and galaxy photometry conditioned on the latent parameters.  The likelihoods must be made in a self-consistent manner in order to test the inference method.  [Note: I need to explain this more articulately!]  
 
 For each $n$, $p(\textul{\ell}_{n} | \mu_{n}, z_{n}, t_{n})$ will be a $T\times Z\times D$ three-dimensional array $\textul{L}^{n}$.  
 
@@ -311,10 +351,10 @@ Next, we tackle $p(\vec{m}_{n} | z_{n})$, which will be a length $Z$ array $\vec
 The overall likelihood of Eq. \ref{eq:first} is simply the product of $L^{n}_{\tau\zeta\nu}$ and $M^{n}_{\zeta}$.
 
 \subsubsection{Incorporating the selection function}
-\label{sec:selection}
+\label{sec:selectionfunctions}
 
 \subsubsection{Making interim posteriors}
-\label{sec:posteriors}
+\label{sec:interimpriors}
 
 To make interim posteriors, we introduce the interim priors of Eq. \ref{eq:second}.  We choose $\vec{\theta}^{*}$ and $\textul{\phi}^{*}$ [specify what a good, general choice would be].  Because the parametrization hasn't changed, the term $p(z_{\zeta}, t_{\tau} | \textul{\phi}^{*})$ takes the simple form of $\phi^{*}_{\tau\zeta}$.  Similarly, $p(\mu_{\nu} | z_{\zeta}, \vec{\theta}^{*})$ will be a delta function $\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})$.  
 
