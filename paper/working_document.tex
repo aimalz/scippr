@@ -145,9 +145,9 @@ the posterior on cosmological parameters and redshift-dependent type proportions
 It is very important to document the assumptions we make with this model:
 \begin{enumerate}
 	\item\label{it:completeness} The expression of Eq. \ref{eq:wrapup} is only as correct as the probabilistic graphical model of Fig. \ref{fig:pgm} is complete.
-	\item\label{it:prior} We must choose a prior probability distribution $p(\vec{Omega}, \textul{\phi})$.
-	\item\label{it:interimpriors} The interim prior parameters $\vec{\theta}$ and $\textul{\xi}$ are known and shared among all supernovae $n$.
-	\item\label{it:selectionfunctions} The selection function parameters $\vec{\beta}$ and $\textul{\alpha}$ are known and shared among all supernovae $n$.
+	\item\label{it:prior} We must choose a prior probability distribution $p(\vec{\Omega}, \textul{\phi})$.
+	\item\label{it:interimpriors} The interim prior parameters $\vec{\theta}$ and $\textul{\xi}$ are known and shared among all supernovae and host galaxies $n$.
+	\item\label{it:selectionfunctions} The selection function parameters $\vec{\beta}$ and $\textul{\alpha}$ are known and shared among all supernovae and host galaxies $n$.
 	\item\label{it:independence} All latent and observed parameters associated with the supernovae and their host galaxies are statistically independent from the latent and observed parameters of all other supernovae and their host galaxies.
 	\item\label{it:accuracy} The interim posterior distributions $\{p(z_{n} | \vec{f}_{n}, \vec{\theta}, \vec{\beta})\}_{N}$ and $\{p(t_{n}, z_{n}, \mu_{n} | \textul{\ell}_{n}, \textul{\xi}, \vec{\alpha})\}_{N}$ are accurate.
 \end{enumerate}
@@ -360,23 +360,29 @@ Because we do not simulate the supernova lightcurves nor host galaxy photometry,
 
 In the simple case of host galaxy photometry, we assume the cuts in magnitude and signal-to-noise ratio expected of LSST and apply these to the photometry of the Buzzard catalog with a known redshift distribution.  By simply taking the ratio of recovered galaxies to simulated galaxies within each of the $J$ redshift bins.  Note that we have already assumed no correlation between host galaxy properties and supernova type, but if there were a simulation that accurately included this effect, we could obtain a selection function in the space of $t$ and $z$ based on that.  \textbf{(We need to actually do this with realistic cuts and mock data.)}  This procedure gives us $p(z | \vec{\beta})$.
 
-In the three-dimensional case of supernova lightcurves, there is not a mock dataset with information on the true number of supernovae at each $\mu$, $z$, and $t$.  \textbf{(Is this the nominal reason why we have to take the ratio of what's recovered with the WFD selection cuts to what's recovered with the DDF selection cuts?  I don't understand how we have either of those numbers if that data is not available.  Is it because the recovery rate requires choosing a classifier and lightcurve fitter?)}  Instead of using the ratio of the number of supernovae recovered over the number of supernovae simulated as a function of their latent variables, we use the ratio of the recovery rate for the selection function in question over the recovery rate for the most generous possible selection function.  For LSST, these correspond to the Wide Fast Deep (WFD) and Deep Drilling Fields (DDF) selection functions.  This procedure gives us $p(\mu, z, t | \vec{\alpha})$.
+In the three-dimensional case of supernova lightcurves, there is not a mock dataset with information on the true number of supernovae at each $\mu$, $z$, and $t$.  \textbf{(Is this the nominal reason why we have to take the ratio of what's recovered with the WFD selection cuts to what's recovered with the DDF selection cuts?  I don't understand how we have either of those numbers if that data is not available.  Is it because the recovery rate requires choosing a classifier and lightcurve fitter?)}  Instead of using the ratio of the number of supernovae recovered over the number of supernovae simulated as a function of their latent variables, we use the ratio of the recovery rate for the selection function in question over the recovery rate for the most generous possible selection function.  For LSST, these correspond to the Wide Fast Deep (WFD) and Deep Drilling Fields (DDF) selection functions.  This procedure gives us $p(z, t | \vec{\alpha})$.  The selection function on $\mu$ is cosmology-dependent so is not included in this model.  \textbf{(Should we try to include this or assert that given a cosmology, it is a straightforward result of $p(z, t | \vec{\alpha})$?)}
+
+The product of the selection function terms $p(z | \vec{\beta})$ and $p(z, t | \vec{\alpha})$ gives us the overall selection function term $p(]mu, z, t | \vec{\alpha}, \vec{\beta})$.
 
 \subsubsection{Making interim posteriors}
 \label{sec:interimpriors}
 
+Recall the interim priors introduced in Sec. \ref{sec:model}.  The way they enter the production of interim posteriors is functionally equivalent to the selection functions.  Rather than arising from biases in the collection of the observed data, the interim priors result from the method by which the observed data is converted into estimates of the posteriors of Sec. \ref{sec:posteriors}.  Examples would be the bias due to the choice of training set for a machine learning method or the presumed distribution of the latent variables in a template-fitting approach.  So long as the interim priors are known, we can still perform an unbiased inference.  We model the interim priors separately for the production of photo-$z$ PDFs and the three-dimensional posteriors from the lightcurves.  
 
+The interim prior for a photo-$z$ PDF method is a form of $p(z | \vec{\theta})$, the redshift distribution conditioned on a known set of parameters.  Given our piecewise constant parametrization of redshift space, we can take $\vec{\theta}$ to be comprised of probabilities over each bin.  We choose it to mimic the redshift distribution from a previous spectroscopic survey.  \textbf{(Currently it's flat, but it would be reasonable to use the SDSS DR8 $n(z)$ as an interim prior.)}
 
-To make interim posteriors, we introduce the interim priors of Eq. \ref{eq:second}.  We choose $\vec{\theta}^{*}$ and $\textul{\phi}^{*}$ [specify what a good, general choice would be].  Because the parametrization hasn't changed, the term $p(z_{\zeta}, t_{\tau} | \textul{\phi}^{*})$ takes the simple form of $\phi^{*}_{\tau\zeta}$.  Similarly, $p(\mu_{\nu} | z_{\zeta}, \vec{\theta}^{*})$ will be a delta function $\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})$.  
+The interim prior for our anticipated probabilistic lightcurve fitter must be a distribution in the three-dimensional space of latent variables.  Here, we choose the interim prior parameters comprising $\textul{\xi}$ to be the cosmological parameters from a previous study and their error estimates, as well as a uniform redshift-independent supernova type proportion.  The cosmological parameters and their error bars correspond to a probability density over the Hubble diagram, which can be expressed as a piecewise constant function in the two-dimensional space of redshift and distance modulus.  The uniform interim prior on supernova types indicates that there will be $T$ identical $J\times K$ element matrices comprising the probability distribution $p(\mu, z, t | \textul{\xi})$.
 
-Finally, in Eq \ref{eq:interimposteriordata}, we put these pieces together to express the form of the individual interim posteriors of the form of Eq. \ref{eq:mockBayes}.
-
-\begin{align}
-\label{eq:interimposteriordata}
-p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= KC_{\tau'_{n}\tau}\mathcal{N}_{(\hat{z}^{\ell}, \hat{\mu}^{\ell}), \textul{\Sigma}_{n}}(z_{\zeta}, \mu_{\nu}) \mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta}) \phi^{*}_{\zeta\tau}\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})
-\end{align}
-
-The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\sum_{\zeta}^{Z}\sum_{\tau}^{T} p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})=1$.
+%Because the parametrization hasn't changed, the term $p(z_{\zeta}, t_{\tau} | \textul{\phi}^{*})$ takes the simple form of $\phi^{*}_{\tau\zeta}$.  Similarly, $p(\mu_{\nu} | z_{\zeta}, \vec{\theta}^{*})$ will be a delta function $\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})$.  
+%
+%Finally, in Eq \ref{eq:interimposteriordata}, we put these pieces together to express the form of the individual interim posteriors of the form of Eq. \ref{eq:mockBayes}.
+%
+%\begin{align}
+%\label{eq:interimposteriordata}
+%p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*}) &= KC_{\tau'_{n}\tau}\mathcal{N}_{(\hat{z}^{\ell}, \hat{\mu}^{\ell}), \textul{\Sigma}_{n}}(z_{\zeta}, \mu_{\nu}) \mathcal{N}_{\hat{z}_{n}^{m}, \sigma_{n}^{2}}(z_{\zeta}) \phi^{*}_{\zeta\tau}\delta_{f_{\vec{\theta}^{*}}(z_{\zeta})}(\mu_{\nu})
+%\end{align}
+%
+%The constant of proportionality $K$ here will be set such that $\sum_{\nu}^{D}\sum_{\zeta}^{Z}\sum_{\tau}^{T} p_{n}(\mu_{\nu}, z_{\zeta}, t_{\tau} | \textul{\ell}_{n}, \vec{m}_{n}, \vec{\theta}^{*}, \textul{\phi}^{*})=1$.
 
 
 
