@@ -12,7 +12,7 @@ SCIPPR currently consists of two Jupyter notebooks, one to simulate some mock da
 
 ## People
 
-This project is led by [Alex Malz](https://github.com/aimalz/scippr/issues/new?body=@aimalz)(NYU), [Tina Peters](https://github.com/aimalz/scippr/issues/new?body=@tinapeters)(U.Toronto), [Renee Hlozek](https://github.com/aimalz/scippr/issues/new?body=@reneehlozek)(U.Toronto) in collaboration with [Anita Bahmanyar](https://github.com/Andromedanita)(U. Toronto), [Lluis Galbany](https://github.com/lgalbany)(U. Pitt), [Kara Ponder](https://github.com/kponder)(U. Pitt), and [Humna Awan](https://github.com/humnaawan)(Rutgers) and with support from [LSST-DESC](https://github.com/LSSTDESC).
+This project is led by [Alex Malz](https://github.com/aimalz/scippr/issues/new?body=@aimalz)(NYU), [Tina Peters](https://github.com/aimalz/scippr/issues/new?body=@tinapeters)(U.Toronto), and [Renee Hlozek](https://github.com/aimalz/scippr/issues/new?body=@reneehlozek)(U.Toronto) in collaboration with [Anita Bahmanyar](https://github.com/Andromedanita)(U. Toronto), [Lluis Galbany](https://github.com/lgalbany)(U. Pitt), [Kara Ponder](https://github.com/kponder)(U. Pitt), and [Humna Awan](https://github.com/humnaawan)(Rutgers) and with support from [LSST-DESC](https://github.com/LSSTDESC).
 
 ## License, Contributing etc
 
