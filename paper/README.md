@@ -1,0 +1,1 @@
+The paper is now being developed on ShareLatex, though changes will be incorporated here periodically.  Please do not fork the repo and edit the paper in this directory!  Instead, contact @reneehlozek for access to the working draft on ShareLatex if you want to contribute to the draft.
