@@ -8,6 +8,7 @@ import scipy.interpolate as spi
 import scipy.optimize as spo
 import normalise_funs as nf
 import fit_funs as ff
+import pickle
 z_sigma = 0.03
 
 #import hickle
@@ -110,7 +111,7 @@ def sample_discrete(fracs, n_of_z, N):
         out_info.append(each)
     return out_info
 
-n_sne = 10
+n_sne = 50
 true_id = range(n_sne)
 
 true_params = sample_discrete(frac_types, true_n_of_z, n_sne)
@@ -125,13 +126,15 @@ posters.append(next(i for i,v in enumerate(true_types) if v == 'II'))
 to_plot = [[d['z'] for d in true_params if d['t'] == types[t]] for t in range(n_types)]
 hist_bins = np.linspace(min_z, max_z, plot_res + 1)
 bin_difs = hist_bins[1:] - hist_bins[:-1]
-for t in range(n_types):
-    plt.plot(z_plot, plot_true_n_of_z[t] * n_sne * bin_difs, color=colors[t], label='true '+types[t])
-    plt.hist(to_plot[t], bins=hist_bins, color=colors[t], alpha=1./3., label='sampled '+types[t], normed=False)
-plt.xlabel(r'$z$')
-plt.ylabel(r'relative rate')
-plt.legend(fontsize='xx-small')
-plt.savefig('plots/obs_rates.png')
+#for t in range(n_types):
+#    plt.plot(z_plot, plot_true_n_of_z[t] * n_sne * bin_difs, color=colors[t], label='true '+types[t])
+#    plt.hist(to_plot[t], bins=hist_bins, color=colors[t], alpha=1./3., label='sampled '+types[t], normed=False)
+
+#plt.xlabel(r'$z$')
+
+#plt.ylabel(r'relative rate')
+#plt.legend(fontsize='xx-small')
+#plt.savefig('plots/obs_rates.png')
 
 # Planck 2015 results XIV. Dark energy and modified gravity - Figure 3
 true_H0 = 67.9
@@ -141,6 +144,9 @@ true_w0 = -1.09
 true_wa = -0.20
 true_hyperparams = np.array([true_w0, true_wa])
 n_hyperparams = len(true_hyperparams)
+
+true_model = np.array([true_H0,true_Ode0, true_Om0, true_w0, true_wa])
+vary_model = np.array([0,0,0,1,1])
 #true_cosmo = cosmology.FlatLambdaCDM(H0=true_H0, Om0=true_Om0)
 true_cosmo = cosmology.w0waCDM(true_H0, true_Om0, true_Ode0, w0=true_w0, wa=true_wa)
 
@@ -160,7 +166,8 @@ mu_lims = (true_cosmo.distmod(min_z).value, true_cosmo.distmod(max_z).value)
 
 # want this to be agnostic about true cosmology
 n_mus = 101
-(min_mu, max_mu) = mu_lims#mu_lims[0] - np.random.random(), mu_lims[1] + np.random.random()#min([s['mu'] for s in true_params]) - 0.5, max([s['mu'] for s in true_params]) + 0.5
+(min_mu, max_mu) = mu_lims
+#mu_lims[0] - np.random.random(), mu_lims[1] + np.random.random()#min([s['mu'] for s in true_params]) - 0.5, max([s['mu'] for s in true_params]) + 0.5
 mu_bins = np.linspace(min_mu, max_mu, num=n_mus, endpoint=True)
 mu_difs = mu_bins[1:] - mu_bins[:-1]
 mu_dif = np.mean(mu_difs)
@@ -180,16 +187,51 @@ unity_one = np.ones((n_types, n_zs-1, n_mus-1))
  
 pmin, pmax = log_epsilon, np.log(1./(min(z_difs) * min(mu_difs)))
 
-conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
-true_rates = np.sum(conf_matrix, axis=1)
-obs_rates = np.sum(conf_matrix, axis=0)
-# print(conf_matrix, frac_types, true_rates, obs_rates)
-conf_matrix /= true_rates[:, np.newaxis]
+#conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
+# adjusted
+conf_matrix = np.random.rand(3,3) + (0.8 * np.eye(3))
+# RH removed this because we don't think that classifiation probabilities
+# need to know about sn type* frac_types[:, np.newaxis]
+print(conf_matrix)
+print('---')
+# we want to sum over the axis that is the "true type"  axis -- which we will see later, is the column.
+# this is because over all light curve fitters, we want the probability to sum to unity, but we don't expect the
+# objects to sum to unity across one fitter
+
+norm_prob = np.sum(conf_matrix, axis=1)
+print(norm_prob)
+print('norm prob above')
+conf_matrix[0] /= norm_prob[0]
+conf_matrix[1] /= norm_prob[1]
+conf_matrix[2] /= norm_prob[2]
+
+print(conf_matrix)
+print('---')
+
+print(np.sum(conf_matrix[0]), np.sum(conf_matrix[:,0]), np.sum(conf_matrix[0,:]))
+#true_rates = np.sum(conf_matrix, axis=1)
+#obs_rates = np.sum(conf_matrix, axis=0)
+#print(conf_matrix, frac_types, true_rates, obs_rates)
+
+
+# Renee removed this normalisation for now - as I don't understand it!
+
+#conf_matrix /= true_rates[:, np.newaxis]
+#assert np.all(np.isclose(true_rates, frac_types))
+
+
 # print(conf_matrix)
 
-assert np.all(np.isclose(true_rates, frac_types))
+
 
 ln_conf_matrix = safe_log(conf_matrix)
+
+Ia_Ia_var = np.array([0.001, 0.04]) ** 2
+Ibc_Ia_delta = 0.25 #np.mean(mu_mids)
+Ibc_Ia_var = np.array([0.001, 0.04]) ** 2
+II_Ia_delta = 0.25 # np.mean(mu_mids)
+II_Ia_var = np.array([0.001, 0.04]) ** 2
+
 
 Ia_Ia_var = np.array([0.001, 0.04]) ** 2
 Ibc_Ia_delta = 0.25
@@ -368,7 +410,7 @@ for s in range(n_sne):
     pzs.append(pz)
     #ln_pzs.append(ln_pz)
 pzs = np.array(pzs)
-pzs = normalize_z(pzs)
+pzs = nf.normalize_z(pzs, z_difs)
 ln_pzs = safe_log(pzs)#np.array(ln_pzs)
 
 # We emulate this using data from a realistic galaxy simulation.
@@ -384,7 +426,7 @@ ln_pzs = safe_log(pzs)#np.array(ln_pzs)
 # ln_pz_selfun = safe_log(pz_selfun)
 
 host_sel_fun = np.ones(n_zs-1)
-host_sel_fun = normalize_z(host_sel_fun)
+host_sel_fun = nf.normalize_z(host_sel_fun, z_difs)
 # host_sel_fun_norm = np.sum(host_sel_fun * z_difs)
 # host_sel_fun /= host_sel_fun_norm
 # assert np.isclose(np.sum(host_sel_fun * z_difs), 1.)
@@ -394,7 +436,7 @@ ln_host_selection_function = safe_log(host_sel_fun)
 # read in the SDSS DR7 one instead
 # separate interim prior from LC fitter and photo-z PDFs: this is for photo-z PDFs, flat for now, replace with SDSS n(z)
 pz_interim = np.ones(n_zs-1)
-pz_interim = normalize_z(pz_interim)
+rim = nf.normalize_z(pz_interim, z_difs)
 # pz_interim /= np.sum(pz_interim * z_difs)
 # assert np.isclose(np.sum(pz_interim * z_difs), 1.)
 ln_pz_interim = safe_log(pz_interim)
@@ -403,15 +445,15 @@ ln_pz_interim = safe_log(pz_interim)
 # Combining everything
 ln_host_probs = reg_vals(ln_pzs + ln_host_selection_function[np.newaxis, :] + ln_pz_interim[np.newaxis, :])
 host_probs = np.exp(ln_host_probs)[:, np.newaxis, :, np.newaxis] * unity_all
-host_probs = nf.normalize_all(host_probs)
+host_probs = nf.normalize_all(host_probs, z_difs, mu_difs)
 ln_host_probs = safe_log(host_probs)
 ln_sn_probs = reg_vals(sheet_cake + ln_sn_selection_function[np.newaxis, :] + ln_sn_interim[np.newaxis, :])
 sn_probs = np.exp(ln_sn_probs)
-sn_probs = nf.normalize_all(sn_probs)
+sn_probs = nf.normalize_all(sn_probs, z_difs, mu_difs)
 ln_sn_probs = safe_log(sn_probs)
 interim_ln_posteriors = reg_vals(ln_host_probs + ln_sn_probs)
 interim_posts = np.exp(interim_ln_posteriors)
-interim_posts = normalize_all(interim_posts)
+interim_posts = nf.normalize_all(interim_posts, z_difs, mu_difs)
 interim_ln_posteriors = safe_log(interim_posts)
 
 sn_id = ['CID_%i'%n for n in np.arange(0,n_sne,1)]
@@ -425,7 +467,42 @@ for t in range(n_types):
 
 # write true hyperparameters just to check
 #d = {'b' : 1, 'a' : 0, 'c' : 2}
-truth = { 'phi': binned_n_of_z, 'theta': true_hyperparams, 'data': true_params, 'id': sn_id}
-#truth['theta'] = true_hyperparams
-#truth['data'] = true_params
-#truth['id']=sn_id
+truth = { 'phi': binned_n_of_z, 'model': true_model, 'vary_index': vary_model, 'data': true_params, 'id': sn_id}
+outfile = open('data/truthfile_modprob.pkl','wb')
+pickle.dump(truth,outfile)
+outfile.close()
+
+#Saving the redshift posterior
+output_z = {'types': types, 'z_bins': z_bins, 'mu_bins': mu_bins}
+#output_z['ln host selection function'] = ln_host_selection_function
+#output_z['host interim ln prior'] = ln_pz_interim
+output_z['ln host posterior'] = ln_host_probs
+output_z['id'] = sn_id
+with open('data/hostzfile_modprob.pkl', 'w') as out_file:
+    pickle.dump(output_z, out_file)
+
+# Saving the LC posterior
+output_lc = {'types': types, 'z_bins': z_bins, 'mu_bins': mu_bins}
+#output_lc['ln sn selection function'] = ln_sn_selection_function
+#output_lc['sn interim ln prior'] = ln_sn_interim
+#output_lc['ln selection function'] = safe_log(normalize_one(np.exp(reg_vals(output['ln host selection function'][np.newaxis, :, np.newaxis] + output['ln sn selection function']))))
+output_lc['ln sn posterior'] = ln_sn_probs
+output_lc['id'] = sn_id
+
+with open('data/snfile_modprob.pkl', 'w') as out_file:
+    pickle.dump(output_lc, out_file)
+
+#Saving the full posterior
+output = {'types': types, 'z_bins': z_bins, 'mu_bins': mu_bins}
+output['ln host selection function'] = ln_host_selection_function
+output['host interim ln prior'] = ln_pz_interim
+output['ln sn selection function'] = ln_sn_selection_function
+output['sn interim ln prior'] = ln_sn_interim
+output['ln selection function'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['ln host selection function'][np.newaxis, :, np.newaxis] + output['ln sn selection function'])),z_difs, mu_difs))
+output['interim ln prior'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['host interim ln prior'][np.newaxis, :, np.newaxis] + output['sn interim ln prior'])),z_difs, mu_difs))
+output['ln prior info'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['interim ln prior'] + output['ln selection function'])),z_difs, mu_difs))
+output['interim ln posteriors'] = interim_ln_posteriors
+output['id'] = sn_id
+with open('data/jointfile_modprob.pkl', 'w') as out_file:
+    pickle.dump(output, out_file)
+
