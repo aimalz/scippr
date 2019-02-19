@@ -1,4 +1,7 @@
 #import daft
+import matplotlib 
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt 
 import astropy.cosmology as cosmology
 import pandas as pd
 import numpy as np
@@ -91,10 +94,10 @@ assert np.isclose(np.sum(plot_true_n_of_z * z_dif_plot), 1.)
 
 for t in range(n_types):
     plt.plot(z_plot, plot_true_n_of_z[t], color=colors[t], label=types[t])
-plt.xlabel(r'$z$')
-plt.ylabel(r'relative rate')
-plt.legend()
-plt.savefig('plots/true_rates.png')
+plt.xlabel('z')
+plt.ylabel('relative rate')
+#plt.legend()
+#plt.savefig('plots/true_rates.png')
 
 
 def sample_discrete(fracs, n_of_z, N):
