@@ -477,8 +477,8 @@ outfile.close()
 
 #Saving the redshift posterior
 output_z = {'types': types, 'z_bins': z_bins, 'mu_bins': mu_bins}
-#output_z['ln host selection function'] = ln_host_selection_function
-#output_z['host interim ln prior'] = ln_pz_interim
+output_z['ln host selection function'] = ln_host_selection_function
+output_z['host interim ln prior'] = ln_pz_interim
 output_z['ln host posterior'] = ln_host_probs
 output_z['id'] = sn_id
 with open('data/hostzfile_modprob.pkl', 'w') as out_file:
@@ -486,8 +486,8 @@ with open('data/hostzfile_modprob.pkl', 'w') as out_file:
 
 # Saving the LC posterior
 output_lc = {'types': types, 'z_bins': z_bins, 'mu_bins': mu_bins}
-#output_lc['ln sn selection function'] = ln_sn_selection_function
-#output_lc['sn interim ln prior'] = ln_sn_interim
+output_lc['ln sn selection function'] = ln_sn_selection_function
+output_lc['sn interim ln prior'] = ln_sn_interim
 #output_lc['ln selection function'] = safe_log(normalize_one(np.exp(reg_vals(output['ln host selection function'][np.newaxis, :, np.newaxis] + output['ln sn selection function']))))
 output_lc['ln sn posterior'] = ln_sn_probs
 output_lc['id'] = sn_id
