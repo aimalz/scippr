@@ -15,7 +15,7 @@ import pickle
 z_sigma = 0.03
 
 #import hickle
-
+name_save ='modprob_newcosmo'
 import os
 paths = ['data', 'plots']
 if not os.path.exists('data'):
@@ -143,8 +143,8 @@ bin_difs = hist_bins[1:] - hist_bins[:-1]
 true_H0 = 67.9
 true_Ode0 = 0.693
 true_Om0 = 1. - true_Ode0
-true_w0 = -1.09
-true_wa = -0.20
+true_w0 = -1.0
+true_wa = 0.00
 true_hyperparams = np.array([true_w0, true_wa])
 n_hyperparams = len(true_hyperparams)
 
@@ -192,7 +192,10 @@ pmin, pmax = log_epsilon, np.log(1./(min(z_difs) * min(mu_difs)))
 
 #conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
 # adjusted
-conf_matrix = np.random.rand(3,3) + (0.8 * np.eye(3))
+
+conf_matrix = np.eye(3) * frac_types[:, np.newaxis]
+
+#np.random.rand(3,3) + (0.8 * np.eye(3))
 # RH removed this because we don't think that classifiation probabilities
 # need to know about sn type* frac_types[:, np.newaxis]
 print(conf_matrix)
@@ -471,7 +474,7 @@ for t in range(n_types):
 # write true hyperparameters just to check
 #d = {'b' : 1, 'a' : 0, 'c' : 2}
 truth = { 'phi': binned_n_of_z, 'model': true_model, 'vary_index': vary_model, 'data': true_params, 'id': sn_id}
-outfile = open('data/truthfile_modprob.pkl','wb')
+outfile = open('data/truthfile%s.pkl'%name_save,'wb')
 pickle.dump(truth,outfile)
 outfile.close()
 
@@ -481,7 +484,7 @@ output_z['ln host selection function'] = ln_host_selection_function
 output_z['host interim ln prior'] = ln_pz_interim
 output_z['ln host posterior'] = ln_host_probs
 output_z['id'] = sn_id
-with open('data/hostzfile_modprob.pkl', 'w') as out_file:
+with open('data/hostzfile_%s.pkl'%name_save, 'w') as out_file:
     pickle.dump(output_z, out_file)
 
 # Saving the LC posterior
@@ -492,7 +495,7 @@ output_lc['sn interim ln prior'] = ln_sn_interim
 output_lc['ln sn posterior'] = ln_sn_probs
 output_lc['id'] = sn_id
 
-with open('data/snfile_modprob.pkl', 'w') as out_file:
+with open('data/snfile_%s.pkl'%name_save, 'w') as out_file:
     pickle.dump(output_lc, out_file)
 
 #Saving the full posterior
@@ -506,6 +509,6 @@ output['interim ln prior'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['h
 output['ln prior info'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['interim ln prior'] + output['ln selection function'])),z_difs, mu_difs))
 output['interim ln posteriors'] = interim_ln_posteriors
 output['id'] = sn_id
-with open('data/jointfile_modprob.pkl', 'w') as out_file:
+with open('data/jointfile_%s.pkl'%name_save, 'w') as out_file:
     pickle.dump(output, out_file)
 
