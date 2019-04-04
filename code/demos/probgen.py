@@ -23,18 +23,19 @@ def rejection_sampling(x, px, num=1000):
     return np.array(samples)
 
 
-step = 0.001
-x = np.arange(0,1+step, step)
+#step = 0.001
+#x = np.arange(0,1+step, step)
 #px =  st.norm.pdf(x)
 
-px = x
+#px = x
 
-vals = rejection_sampling(x,px,num=5000)
+#vals = rejection_sampling(x,px,num=5000)
 
-pl.plot(x, px, 'r')
-pl.savefig('test.png')
-pl.clf()
+#pl.plot(x, px, 'r')
+#pl.savefig('test.png')
 
-pl.hist(vals)
+#pl.clf()
 
-pl.savefig('hi.png')
+#pl.hist(vals)
+
+#pl.savefig('hi.png')
