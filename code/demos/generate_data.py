@@ -12,6 +12,7 @@ import scipy.optimize as spo
 import normalise_funs as nf
 import fit_funs as ff
 import pickle
+import probgen as pg
 z_sigma = 0.03
 
 #import hickle
@@ -47,9 +48,10 @@ assert np.isclose(np.sum(frac_types), 1.)
 min_z = 0.2
 max_z = 0.6
 
+
 n_of_z_consts = {}
-n_of_z_consts['Ia'] = (1.5, 0.5)
-n_of_z_consts['Ibc'] = (1., 0.5)
+n_of_z_consts['Ia'] = (1.5, 1.0)
+n_of_z_consts['Ibc'] = (1., 0.8)
 n_of_z_consts['II'] = (0.5, 0.5)
 
 true_n_of_z = []
@@ -92,12 +94,16 @@ plot_true_n_of_z = frac_types[:, np.newaxis] * np.array(plot_true_n_of_z)# / z_r
 plot_true_n_of_z /= np.sum(plot_true_n_of_z * z_dif_plot)
 assert np.isclose(np.sum(plot_true_n_of_z * z_dif_plot), 1.)
 
+
+
+
 for t in range(n_types):
     plt.plot(z_plot, plot_true_n_of_z[t], color=colors[t], label=types[t])
 plt.xlabel('z')
 plt.ylabel('relative rate')
 #plt.legend()
 #plt.savefig('plots/true_rates.png')
+
 
 
 def sample_discrete(fracs, n_of_z, N):
@@ -118,7 +124,6 @@ n_sne = 50
 true_id = range(n_sne)
 
 true_params = sample_discrete(frac_types, true_n_of_z, n_sne)
-
 true_zs = [true_param['z'] for true_param in true_params]
 true_types = [true_param['t'] for true_param in true_params]
 posters = []
@@ -129,6 +134,7 @@ posters.append(next(i for i,v in enumerate(true_types) if v == 'II'))
 to_plot = [[d['z'] for d in true_params if d['t'] == types[t]] for t in range(n_types)]
 hist_bins = np.linspace(min_z, max_z, plot_res + 1)
 bin_difs = hist_bins[1:] - hist_bins[:-1]
+
 #for t in range(n_types):
 #    plt.plot(z_plot, plot_true_n_of_z[t] * n_sne * bin_difs, color=colors[t], label='true '+types[t])
 #    plt.hist(to_plot[t], bins=hist_bins, color=colors[t], alpha=1./3., label='sampled '+types[t], normed=False)
@@ -190,10 +196,20 @@ unity_one = np.ones((n_types, n_zs-1, n_mus-1))
  
 pmin, pmax = log_epsilon, np.log(1./(min(z_difs) * min(mu_difs)))
 
-#conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
+conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
 # adjusted
 
+
+# Generating new probabilities
+
 conf_matrix = np.eye(3) * frac_types[:, np.newaxis]
+
+print(np.shape(conf_matrix), 'yoyo')
+
+for i in range(n_types):
+        probs[i,z_diffs] = pg.rejection_sampling(z_difs,binned_n_of_z[i]/binned_n_of_z[0], len(z_diffs))
+
+        print(probs)
 
 #np.random.rand(3,3) + (0.8 * np.eye(3))
 # RH removed this because we don't think that classifiation probabilities
