@@ -16,7 +16,7 @@ import probgen as pg
 import pylab as pl
 z_sigma = 0.03
 #import hickle
-name_save ='modprob_newcosmo'
+name_save ='newconf_newcosmo'
 import os
 paths = ['data', 'plots']
 if not os.path.exists('data'):
@@ -225,7 +225,7 @@ for t in range(n_types):
 pl.plot(z_mids, np.sum(rate_of_z[:,:],axis=0), 'k')
 pl.xlabel('z')
 pl.ylabel('relative rate')
-pl.savefig('test_prosb.png')
+#pl.savefig('test_prosb.png')
 conf_matrix = np.zeros((len(z_difs),n_types,n_types))
 
 # Generating new probabilities
