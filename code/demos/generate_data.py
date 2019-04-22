@@ -13,8 +13,8 @@ import normalise_funs as nf
 import fit_funs as ff
 import pickle
 import probgen as pg
+import pylab as pl
 z_sigma = 0.03
-
 #import hickle
 name_save ='modprob_newcosmo'
 import os
@@ -40,12 +40,12 @@ rc("text", usetex=True)
 types = ['Ia', 'Ibc', 'II']
 colors = ['b', 'm', 'g']
 n_types = len(types)
+
 # making up the type fractions, will replace this with data soon!
-frac_types = np.array([0.4, 0.1, 0.5])
-assert np.isclose(np.sum(frac_types), 1.)
+frac_types = np.array([0.4, 0.1, 0.5]) # removing this from most places and making the types redshift dependent
 
 # these arbitrary limits are from the selection function
-min_z = 0.2
+min_z = 0.05
 max_z = 0.6
 
 
@@ -87,13 +87,16 @@ def reg_vals(arr, threshold=log_epsilon):
     return arr
 
                 
+
 plot_true_n_of_z = np.zeros((n_types, plot_res))
+
+
 for t in range(n_types):
     plot_true_n_of_z[t] = true_n_of_z[t].pdf(z_plot)
-plot_true_n_of_z = frac_types[:, np.newaxis] * np.array(plot_true_n_of_z)# / z_range
-plot_true_n_of_z /= np.sum(plot_true_n_of_z * z_dif_plot)
-assert np.isclose(np.sum(plot_true_n_of_z * z_dif_plot), 1.)
+    plot_true_n_of_z[t] = frac_types[t, np.newaxis] * np.array(plot_true_n_of_z)[t]
 
+for z in range(len(z_dif_plot)):
+    plot_true_n_of_z[:,z] /= np.sum(plot_true_n_of_z[:,z])
 
 
 
@@ -107,6 +110,7 @@ plt.ylabel('relative rate')
 
 
 def sample_discrete(fracs, n_of_z, N):
+# RH needs to focus on this part
     found_types = [0, 0, 0]
     poster_indices = []
     out_info = []
@@ -196,41 +200,57 @@ unity_one = np.ones((n_types, n_zs-1, n_mus-1))
  
 pmin, pmax = log_epsilon, np.log(1./(min(z_difs) * min(mu_difs)))
 
-conf_matrix = (0.25 + 0.25 * np.eye(3)) * frac_types[:, np.newaxis]
-# adjusted
+binned_n_of_z = np.zeros((n_types, n_zs-1))
 
+rate_of_z = np.zeros((n_types, n_zs-1))
+for t in range(n_types):
+    rate_of_z[t] = frac_types[t, np.newaxis]*true_n_of_z[t].pdf(z_mids)
+    cdfs = true_n_of_z[t].cdf(z_bins)
+    binned_n_of_z[t] = (cdfs[1:] - cdfs[:-1])
+    binned_n_of_z = frac_types[t, np.newaxis]*np.array(binned_n_of_z) #
+
+rate_of_z = np.array(rate_of_z)#
+
+# Making an N(z) vector from which to generate the confusion matrix
+for z in range(len(z_difs)):
+    rate_of_z[:,z]/=np.sum(rate_of_z[:,z])
+
+#print(np.sum(rate_of_z[:,:],axis=0), 'sum over type')
+#print(np.sum(rate_of_z[:,:],axis=1), 'sum over z')
+
+pl.clf()
+for t in range(n_types):
+    pl.plot(z_mids[:], rate_of_z[t,:], color=colors[t], label=types[t])
+    
+pl.plot(z_mids, np.sum(rate_of_z[:,:],axis=0), 'k')
+pl.xlabel('z')
+pl.ylabel('relative rate')
+pl.savefig('test_prosb.png')
+conf_matrix = np.zeros((len(z_difs),n_types,n_types))
 
 # Generating new probabilities
+for i in range(len(z_difs)):
+        conf_matrix[i][:][:] = np.diag(rate_of_z[:,i])
 
-conf_matrix = np.eye(3) * frac_types[:, np.newaxis]
-
-print(np.shape(conf_matrix), 'yoyo')
-
-for i in range(n_types):
-        probs[i,z_diffs] = pg.rejection_sampling(z_difs,binned_n_of_z[i]/binned_n_of_z[0], len(z_diffs))
-
-        print(probs)
 
 #np.random.rand(3,3) + (0.8 * np.eye(3))
 # RH removed this because we don't think that classifiation probabilities
 # need to know about sn type* frac_types[:, np.newaxis]
-print(conf_matrix)
 print('---')
 # we want to sum over the axis that is the "true type"  axis -- which we will see later, is the column.
 # this is because over all light curve fitters, we want the probability to sum to unity, but we don't expect the
 # objects to sum to unity across one fitter
 
-norm_prob = np.sum(conf_matrix, axis=1)
-print(norm_prob)
-print('norm prob above')
-conf_matrix[0] /= norm_prob[0]
-conf_matrix[1] /= norm_prob[1]
-conf_matrix[2] /= norm_prob[2]
+#norm_prob = np.sum(conf_matrix, axis=1)
+#print(norm_prob)
+#print('norm prob above')
+#conf_matrix[0] /= norm_prob[0]
+#conf_matrix[1] /= norm_prob[1]
+#conf_matrix[2] /= norm_prob[2]
 
-print(conf_matrix)
-print('---')
+#print(conf_matrix)
+#print('---')
 
-print(np.sum(conf_matrix[0]), np.sum(conf_matrix[:,0]), np.sum(conf_matrix[0,:]))
 #true_rates = np.sum(conf_matrix, axis=1)
 #obs_rates = np.sum(conf_matrix, axis=0)
 #print(conf_matrix, frac_types, true_rates, obs_rates)
@@ -295,19 +315,34 @@ def fit_II(z, mu, vb=False):
 
 
 def fit_any(true_vals, vb=False):
-    
+
+    ind = np.where(true_vals['z']<z_mids)[0]
+#    print(ind, 'testing empty')
+
+    if len(ind) == 0: 
+        ind=0
+    else:
+        ind = np.min(ind)
+
+ #   print(true_vals['z'], 'z val')
+ #   print(ind, 'indices')
+ #   print(z_mids[ind], 'zvals')
     #     print(unity_one)
     cake = np.zeros((n_types, n_zs-1, n_mus-1))#unity_one.copy()
     #     print(unity_one)
     if true_vals['t'] == 'Ia':
         cake[0] = fit_Ia(true_vals['z'], true_vals['mu'], vb=vb)
-        ln_conf = ln_conf_matrix[0]
+        ln_conf = ln_conf_matrix[ind][0][:]
+        print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'Ibc':
         cake[0] = fit_Ibc(true_vals['z'], true_vals['mu'], vb=vb)
-        ln_conf = ln_conf_matrix[1]
+        ln_conf = ln_conf_matrix[ind][1][:]
+        print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'II':
         cake[0] = fit_II(true_vals['z'], true_vals['mu'], vb=vb)
-        ln_conf = ln_conf_matrix[2]
+        ln_conf = ln_conf_matrix[ind][2][:]
+        print(ln_conf, true_vals['t'])
+
     if vb: print(np.exp(ln_conf))
     dist = sps.norm(loc = true_vals['z'], scale = z_sigma)
     z_means = dist.rvs(2)
@@ -321,6 +356,7 @@ def fit_any(true_vals, vb=False):
     if not np.all(cake>=0.):
         print(true_vals)
         assert False
+    print(np.shape(cake), np.shape(ln_conf))
     cake = reg_vals(safe_log(cake) + ln_conf[:, np.newaxis, np.newaxis])
     #     cake = safe_log(normalize_one(np.exp(cake)))
     if vb: print(np.sum(np.sum(np.exp(cake) * z_difs[np.newaxis, :, np.newaxis] * mu_difs[np.newaxis, np.newaxis, :], axis=2), axis=1))
@@ -479,13 +515,7 @@ interim_posts = nf.normalize_all(interim_posts, z_difs, mu_difs)
 interim_ln_posteriors = safe_log(interim_posts)
 
 sn_id = ['CID_%i'%n for n in np.arange(0,n_sne,1)]
-binned_n_of_z = np.zeros((n_types, n_zs-1))
-for t in range(n_types):
-    cdfs = true_n_of_z[t].cdf(z_bins)
-    binned_n_of_z[t] = (cdfs[1:] - cdfs[:-1])
-    binned_n_of_z = frac_types[:, np.newaxis] * np.array(binned_n_of_z)# / z_range
-    binned_n_of_z /= np.sum(binned_n_of_z * z_difs[np.newaxis, :])
-    assert np.isclose(np.sum(binned_n_of_z * z_difs[np.newaxis, :]), 1.)
+
 
 # write true hyperparameters just to check
 #d = {'b' : 1, 'a' : 0, 'c' : 2}
