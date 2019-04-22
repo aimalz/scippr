@@ -42,7 +42,7 @@ colors = ['b', 'm', 'g']
 n_types = len(types)
 
 # making up the type fractions, will replace this with data soon!
-frac_types = np.array([0.4, 0.1, 0.5]) # removing this from most places and making the types redshift dependent
+frac_types = np.array([0.4, 0.2, 0.4]) # removing this from most places and making the types redshift dependent
 
 # these arbitrary limits are from the selection function
 min_z = 0.05
@@ -232,12 +232,12 @@ conf_matrix = np.zeros((len(z_difs),n_types,n_types))
 for i in range(len(z_difs)):
     for t in range(n_types):
         for tt in range(n_types):
-            conf_matrix[i][t][tt] = 0.1*np.sqrt(rate_of_z[tt,i]*rate_of_z[t,i]) # taking small off diagonal
+            conf_matrix[i][t][tt] = 0.25*np.sqrt(rate_of_z[tt,i]*rate_of_z[t,i]) # taking small off diagonal
         conf_matrix[i][t][t] = rate_of_z[t,i]
 
 
 
-#print(conf_matrix[0:3][:][:])
+print(conf_matrix[0:3][:][:])
 #np.random.rand(3,3) + (0.8 * np.eye(3))
 # RH removed this because we don't think that classifiation probabilities
 # need to know about sn type* frac_types[:, np.newaxis]
