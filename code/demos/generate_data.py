@@ -230,9 +230,14 @@ conf_matrix = np.zeros((len(z_difs),n_types,n_types))
 
 # Generating new probabilities
 for i in range(len(z_difs)):
-        conf_matrix[i][:][:] = np.diag(rate_of_z[:,i])
+    for t in range(n_types):
+        for tt in range(n_types):
+            conf_matrix[i][t][tt] = 0.1*np.sqrt(rate_of_z[tt,i]*rate_of_z[t,i]) # taking small off diagonal
+        conf_matrix[i][t][t] = rate_of_z[t,i]
 
 
+
+#print(conf_matrix[0:3][:][:])
 #np.random.rand(3,3) + (0.8 * np.eye(3))
 # RH removed this because we don't think that classifiation probabilities
 # need to know about sn type* frac_types[:, np.newaxis]
@@ -333,15 +338,15 @@ def fit_any(true_vals, vb=False):
     if true_vals['t'] == 'Ia':
         cake[0] = fit_Ia(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][0][:]
-        print(ln_conf,true_vals['t'])
+#        print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'Ibc':
         cake[0] = fit_Ibc(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][1][:]
-        print(ln_conf,true_vals['t'])
+ #       print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'II':
         cake[0] = fit_II(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][2][:]
-        print(ln_conf, true_vals['t'])
+  #      print(ln_conf, true_vals['t'])
 
     if vb: print(np.exp(ln_conf))
     dist = sps.norm(loc = true_vals['z'], scale = z_sigma)
@@ -356,7 +361,7 @@ def fit_any(true_vals, vb=False):
     if not np.all(cake>=0.):
         print(true_vals)
         assert False
-    print(np.shape(cake), np.shape(ln_conf))
+#    print(np.shape(cake), np.shape(ln_conf))
     cake = reg_vals(safe_log(cake) + ln_conf[:, np.newaxis, np.newaxis])
     #     cake = safe_log(normalize_one(np.exp(cake)))
     if vb: print(np.sum(np.sum(np.exp(cake) * z_difs[np.newaxis, :, np.newaxis] * mu_difs[np.newaxis, np.newaxis, :], axis=2), axis=1))
@@ -520,7 +525,7 @@ sn_id = ['CID_%i'%n for n in np.arange(0,n_sne,1)]
 # write true hyperparameters just to check
 #d = {'b' : 1, 'a' : 0, 'c' : 2}
 truth = { 'phi': binned_n_of_z, 'model': true_model, 'vary_index': vary_model, 'data': true_params, 'id': sn_id}
-outfile = open('data/truthfile%s.pkl'%name_save,'wb')
+outfile = open('data/truthfile_%s.pkl'%name_save,'wb')
 pickle.dump(truth,outfile)
 outfile.close()
 
