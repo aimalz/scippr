@@ -16,7 +16,7 @@ import probgen as pg
 import pylab as pl
 z_sigma = 0.03
 #import hickle
-name_save ='newconf_newcosmo'
+name_save ='newconf_newcosmo_newdist'
 import os
 paths = ['data', 'plots']
 if not os.path.exists('data'):
@@ -274,16 +274,9 @@ print('---')
 ln_conf_matrix = safe_log(conf_matrix)
 
 Ia_Ia_var = np.array([0.001, 0.04]) ** 2
-Ibc_Ia_delta = 0.25 #np.mean(mu_mids)
+Ibc_Ia_delta = 0.1 #np.mean(mu_mids)
 Ibc_Ia_var = np.array([0.001, 0.04]) ** 2
-II_Ia_delta = 0.25 # np.mean(mu_mids)
-II_Ia_var = np.array([0.001, 0.04]) ** 2
-
-
-Ia_Ia_var = np.array([0.001, 0.04]) ** 2
-Ibc_Ia_delta = 0.25
-Ibc_Ia_var = np.array([0.001, 0.01]) ** 2
-II_Ia_delta = np.mean(mu_mids)
+II_Ia_delta = 0.1 # np.mean(mu_mids)
 II_Ia_var = np.array([0.001, 0.04]) ** 2
 
 
@@ -301,10 +294,11 @@ def fit_Ibc(z, mu, vb=False):
     
     
     #     cake = np.zeros((n_types, n_zs-1, n_mus-1))
-    cake_Ia = sps.multivariate_normal(mean = np.array([z, mu - Ibc_Ia_delta]), cov = Ibc_Ia_var * np.eye(2))
-    [z_samp, mu_samp] = cake_Ia.rvs()
-    cake_Ia = sps.multivariate_normal(mean = np.array([z_samp, mu_samp]), cov = Ibc_Ia_var * np.eye(2))
-    cake = nf.normalize_hubble(cake_Ia.pdf(z_mu_grid.reshape(((n_zs-1)*(n_mus-1), 2))).reshape((n_zs-1, n_mus-1)), z_difs, mu_difs, vb=vb)
+    cake_Ibc = sps.multivariate_normal(mean = np.array([z, mu - Ibc_Ia_delta]), cov = Ibc_Ia_var * np.eye(2))
+    [z_samp, mu_samp] = cake_Ibc.rvs()
+
+    cake_Ibc = sps.multivariate_normal(mean = np.array([z_samp, mu_samp]), cov = Ibc_Ia_var * np.eye(2))
+    cake = nf.normalize_hubble(cake_Ibc.pdf(z_mu_grid.reshape(((n_zs-1)*(n_mus-1), 2))).reshape((n_zs-1, n_mus-1)), z_difs, mu_difs, vb=vb)
     return cake
 
 
@@ -312,10 +306,10 @@ def fit_Ibc(z, mu, vb=False):
 def fit_II(z, mu, vb=False):
 
     #     cake = np.zeros((n_types, n_zs-1, n_mus-1))
-    cake_Ia = sps.multivariate_normal(mean = np.array([z, II_Ia_delta]), cov = II_Ia_var * np.eye(2))
-    [z_samp, mu_samp] = cake_Ia.rvs()
-    cake_Ia = sps.multivariate_normal(mean = np.array([z_samp, mu_samp]), cov = II_Ia_var * np.eye(2))
-    cake = nf.normalize_hubble(cake_Ia.pdf(z_mu_grid.reshape(((n_zs-1)*(n_mus-1), 2))).reshape((n_zs-1, n_mus-1)), z_difs, mu_difs, vb=vb)
+    cake_II = sps.multivariate_normal(mean = np.array([z, mu - Ibc_Ia_delta]), cov = II_Ia_var * np.eye(2))
+    [z_samp, mu_samp] = cake_II.rvs()
+    cake_II = sps.multivariate_normal(mean = np.array([z_samp, mu_samp]), cov = II_Ia_var * np.eye(2))
+    cake = nf.normalize_hubble(cake_II.pdf(z_mu_grid.reshape(((n_zs-1)*(n_mus-1), 2))).reshape((n_zs-1, n_mus-1)), z_difs, mu_difs, vb=vb)
     return cake
 
 
@@ -336,14 +330,17 @@ def fit_any(true_vals, vb=False):
     cake = np.zeros((n_types, n_zs-1, n_mus-1))#unity_one.copy()
     #     print(unity_one)
     if true_vals['t'] == 'Ia':
+#        print('here in Ia')
         cake[0] = fit_Ia(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][0][:]
 #        print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'Ibc':
+ #       print('here in Ibc')
         cake[0] = fit_Ibc(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][1][:]
  #       print(ln_conf,true_vals['t'])
     if true_vals['t'] == 'II':
+  #      print('here in II')
         cake[0] = fit_II(true_vals['z'], true_vals['mu'], vb=vb)
         ln_conf = ln_conf_matrix[ind][2][:]
   #      print(ln_conf, true_vals['t'])
