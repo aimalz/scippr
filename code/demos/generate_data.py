@@ -6,6 +6,7 @@ import astropy.cosmology as cosmology
 import pandas as pd
 import numpy as np
 import bisect
+import random
 import scipy.stats as sps
 import scipy.interpolate as spi
 import scipy.optimize as spo
@@ -18,7 +19,7 @@ z_sigma = 0.03
 #import hickle
 name_save_root ='scippr_sims_'
 import os
-paths = ['data', 'plots']
+paths = ['data/sims', 'plots']
 if not os.path.exists('data'):
     print('WARNING: You will need to put some data files in the `data` directory to have nontrivial mock data.')
         
@@ -37,6 +38,12 @@ rc("font", family="serif", size=12)
 rc("text", usetex=True)
 
 
+# setting the iterations and the numbers
+numits = 1
+n_sne = 40 
+
+
+
 types = ['Ia', 'Ibc', 'II']
 colors = ['b', 'm', 'g']
 n_types = len(types)
@@ -45,9 +52,10 @@ n_types = len(types)
 frac_types = np.array([0.4, 0.2, 0.4]) # removing this from most places and making the types redshift dependent
 
 # these arbitrary limits are from the selection function
+
 min_z = 0.05
 max_z = 0.6
-
+print(min_z, max_z, 'there are the min and max z values')
 
 n_of_z_consts = {}
 n_of_z_consts['Ia'] = (1.0, 1.0)
@@ -55,11 +63,14 @@ n_of_z_consts['Ibc'] = (1., 0.8)
 n_of_z_consts['II'] = (0.5, 0.5)
 
 true_n_of_z = []
+# Generating the true z distributions
 for t in types:
     (mean, std) = n_of_z_consts[t]
     low, high = (min_z - mean) / std, (max_z - mean) / std
     print(low,high, 'z distributions')
     true_n_of_z.append(sps.truncnorm(low, high, loc = mean, scale = std))
+
+
 
 plot_res = 20
 z_range = max_z - min_z
@@ -104,36 +115,38 @@ def reg_vals(arr, threshold=log_epsilon):
 
                 
 
-plot_true_n_of_z = np.zeros((n_types, plot_res))
-numits = 2
+#plot_true_n_of_z = np.zeros((n_types, plot_res))
+
 
 for numit in range(numits):
-    n_sne = 50
     name_save = name_save_root+'%s_num_sne_iteration_%s'%(n_sne, numit)
     print('saving: ', name_save)
-    for t in range(n_types):
-        plot_true_n_of_z[t] = true_n_of_z[t].pdf(z_plot)
-        plot_true_n_of_z[t] = frac_types[t, np.newaxis] * np.array(plot_true_n_of_z)[t]
 
-    for z in range(len(z_dif_plot)):
-        plot_true_n_of_z[:,z] /= np.sum(plot_true_n_of_z[:,z])
+#    for t in range(n_types):
+#        plot_true_n_of_z[t] = true_n_of_z[t].pdf(z_plot)
+#        plot_true_n_of_z[t] = frac_types[t, np.newaxis] * np.array(plot_true_n_of_z)[t]
+
+ #   for z in range(len(z_dif_plot)):
+  #      plot_true_n_of_z[:,z] /= np.sum(plot_true_n_of_z[:,z])
 
 
 
-    for t in range(n_types):
-        plt.plot(z_plot, plot_true_n_of_z[t], color=colors[t], label=types[t])
-        plt.xlabel('z')
-        plt.ylabel('relative rate')
+#    for t in range(n_types):
+#        plt.plot(z_plot, plot_true_n_of_z[t], color=colors[t], label=types[t])
+#        plt.xlabel('z')
+#        plt.ylabel('relative rate')
         #plt.legend()
         #plt.savefig('plots/true_rates.png')
 
 
 
-
+    print('ok made it here')
     true_id = range(n_sne)
 
     true_params = sample_discrete(frac_types, true_n_of_z, n_sne)
     true_zs = [true_param['z'] for true_param in true_params]
+
+    print(np.min(true_zs), np.max(true_zs), 'checking the min, max of true z')
     true_types = [true_param['t'] for true_param in true_params]
     posters = []
     posters.append(next(i for i,v in enumerate(true_types) if v == 'Ia'))
@@ -141,6 +154,8 @@ for numit in range(numits):
     posters.append(next(i for i,v in enumerate(true_types) if v == 'II'))
 
     to_plot = [[d['z'] for d in true_params if d['t'] == types[t]] for t in range(n_types)]
+    print(np.min(d['z']), np.max(d['z']), 'checking min and max of mu too')
+
     hist_bins = np.linspace(min_z, max_z, plot_res + 1)
     bin_difs = hist_bins[1:] - hist_bins[:-1]
     
@@ -168,23 +183,35 @@ for numit in range(numits):
     #true_cosmo = cosmology.FlatLambdaCDM(H0=true_H0, Om0=true_Om0)
     true_cosmo = cosmology.w0waCDM(true_H0, true_Om0, true_Ode0, w0=true_w0, wa=true_wa)
 
+
     for n in range(n_sne):
         true_params[n]['mu'] = true_cosmo.distmod(true_params[n]['z']).value
 
-
+    print('generated mu values ok')
         # this binning is arbitrary!
     n_zs = 101
-    z_bins = np.linspace(min_z*(1.05), 0.95*max_z, num=n_zs, endpoint=True)
+    z_bins = np.linspace(min_z*(0.9), 1.1*max_z, num=n_zs, endpoint=True)
     #making sure the simulated redshifts always within the true!
     z_difs = z_bins[1:] - z_bins[:-1]
     z_dif = np.mean(z_difs)
     z_mids = (z_bins[1:] + z_bins[:-1]) / 2.
+    print(np.min(z_bins), np.max(z_bins), 'checking min, max of z_bins')
+    
 
     mu_lims = (true_cosmo.distmod(min_z).value, true_cosmo.distmod(max_z).value)
+
+
+
 
     # want this to be agnostic about true cosmology
     n_mus = 101
     (min_mu, max_mu) = mu_lims
+    print(min_mu, max_mu, 'generated mu min and max')
+
+    # checking true mus
+    true_mus = [true_param['mu'] for true_param in true_params]
+    print(np.min(true_mus), np.max(true_mus), 'checking the min and max of true mus')
+
     #mu_lims[0] - np.random.random(), mu_lims[1] + np.random.random()#min([s['mu'] for s in true_params]) - 0.5, max([s['mu'] for s in true_params]) + 0.5
     mu_bins = np.linspace(min_mu, max_mu, num=n_mus, endpoint=True)
     mu_difs = mu_bins[1:] - mu_bins[:-1]
@@ -193,6 +220,8 @@ for numit in range(numits):
     #print(mu_bins)
     mu_mids = (mu_bins[1:] + mu_bins[:-1]) / 2.
 
+
+    print(np.min(mu_mids), np.max(mu_mids),' checking min and max of mu mids')
     z_mu_grid = np.array([[(z, mu) for mu in mu_mids] for z in z_mids])
     cake_shape = np.shape(z_mu_grid)
     unity = np.ones((n_sne, n_types, n_zs-1, n_mus-1))
@@ -233,6 +262,10 @@ for numit in range(numits):
     #pl.savefig('test_prosb.png')
     conf_matrix = np.zeros((len(z_difs),n_types,n_types))
 
+    randinds_probs = random.sample(range(len(z_difs)), int(0.1*len(z_difs) ) )
+    count_rpi = 0
+
+
     # Generating new probabilities
     for i in range(len(z_difs)):
         for t in range(n_types):
@@ -240,9 +273,25 @@ for numit in range(numits):
                 conf_matrix[i][t][tt] = 0.25*np.sqrt(rate_of_z[tt,i]*rate_of_z[t,i]) # taking small off diagonal
                 conf_matrix[i][t][t] = rate_of_z[t,i]
 
+                # Adding some "known" probabilities for both Ias and non Ias
+                if i==randinds_probs[count_rpi]:
+
+                    ti = np.random.randint(0,3)
+                    print(count_rpi, i, ti, 'weird')
+
+                    if ti==0:
+                        conf_matrix[i][ti][ti] = 1.0
+                        conf_matrix[i][ti][tt] = 0.5
+                    else:
+                        conf_matrix[i][ti][ti] = 1e-10
+                        conf_matrix[i][ti][tt] = 0.5-5e-11
+                    count_rpi +=1
+                
 
 
-    #print(conf_matrix[0:3][:][:])
+
+
+    print((conf_matrix[0:5][:][:]))
     #np.random.rand(3,3) + (0.8 * np.eye(3))
     # RH removed this because we don't think that classifiation probabilities
     # need to know about sn type* frac_types[:, np.newaxis]
@@ -350,7 +399,7 @@ for numit in range(numits):
             ln_conf = ln_conf_matrix[ind][2][:]
             #      print(ln_conf, true_vals['t'])
             
-        if vb: print(np.exp(ln_conf))
+        if vb: print(np.exp(ln_conf), 'hi there')
         dist = sps.norm(loc = true_vals['z'], scale = z_sigma)
         z_means = dist.rvs(2)
         layer_Ibc = sps.norm(loc = z_means[0], scale = z_sigma).pdf(z_mids)
@@ -361,62 +410,59 @@ for numit in range(numits):
         cake[2] = nf.normalize_hubble(unity_hubble * layer_II[:, np.newaxis], z_difs, mu_difs, vb=vb)
         #     cake = normalize_one(cake)
         if not np.all(cake>=0.):
-            print(true_vals)
-            assert False
+            print(true_vals, 'huh true_vals')
+            #assert False
             #    print(np.shape(cake), np.shape(ln_conf))
         cake = reg_vals(safe_log(cake) + ln_conf[:, np.newaxis, np.newaxis])
         #     cake = safe_log(normalize_one(np.exp(cake)))
         if vb: print(np.sum(np.sum(np.exp(cake) * z_difs[np.newaxis, :, np.newaxis] * mu_difs[np.newaxis, np.newaxis, :], axis=2), axis=1))
         return cake
 
-
-        def fit_all(catalog, vb=False):
-            dessert = []
-            i=0
-            for true_vals in catalog:
-                if vb: print(i)
+    def fit_all(catalog, vb=False):
+        dessert = []
+        i=0
+        for true_vals in catalog:
+            if vb: print(i)
             thing = fit_any(true_vals, vb=vb)
             try:
                 dessert.append(thing)
             except AssertionError:
                 print('error '+str(thing))
                 i += 1
-            return np.array(dessert)
-
-            sheet_cake = fit_all(true_params, vb=False)
-            sheet_cake = reg_vals(safe_log(nf.normalize_all(np.exp(sheet_cake), z_difs, mu_difs, vb=False)))
+        return np.array(dessert)
+    sheet_cake = fit_all(true_params, vb=False)
+    sheet_cake = reg_vals(safe_log(nf.normalize_all(np.exp(sheet_cake), z_difs, mu_difs, vb=False)))
             
 
-
-            if not (os.path.exists('data/ratios_wfd.txt') and os.path.exists('data/ratios_ddf.txt')):
-                print('WARNING: No SN LC selection function data found in `data` directory, using flat SN LC selection function instead.')
-                sn_sel_fun_in = unity_zt.copy() # RH changed this
-                sn_sel_fun_in=sn_sel_fun_in[0:len(z_bins)]
+    
+    if not (os.path.exists('data/ratios_wfd.txt') and os.path.exists('data/ratios_ddf.txt')):
+        print('WARNING: No SN LC selection function data found in `data` directory, using flat SN LC selection function instead.')
+        sn_sel_fun_in = unity_zt.copy() # RH changed this
+        sn_sel_fun_in=sn_sel_fun_in[0:len(z_bins)]
                 #print(sn_sel_fun_in,len(z_bins))
-            else:
-                with open('data/ratios_wfd.txt', 'r') as wfd_file:
-                    #     wfd_file.next()
-                    tuples = (line.split(None) for line in wfd_file)
-                wfddata = [[pair[k] for k in range(0,len(pair))] for pair in tuples]
-                n_sel_fun_zs = 6
-                zs_eval = np.array([float(wfddata[i][0]) for i in range(1, n_sel_fun_zs)])
-                wfd_data = np.array([np.array([int(wfddata[i][2 * j]) for j in range(1, (len(wfddata[i]))/2+1)]) for i in range(1, n_sel_fun_zs)])
-                wfd_data[np.isnan(wfd_data)] = 0.
+    else:
+        with open('data/ratios_wfd.txt', 'r') as wfd_file:
+            #     wfd_file.next()
+            tuples = (line.split(None) for line in wfd_file)
+            wfddata = [[pair[k] for k in range(0,len(pair))] for pair in tuples]
+            n_sel_fun_zs = 6
+            zs_eval = np.array([float(wfddata[i][0]) for i in range(1, n_sel_fun_zs)])
+            wfd_data = np.array([np.array([int(wfddata[i][2 * j]) for j in range(1, (len(wfddata[i]))/2+1)]) for i in range(1, n_sel_fun_zs)])
+            wfd_data[np.isnan(wfd_data)] = 0.
                     # print(wfd_data)
-                with open('data/ratios_ddf.txt', 'r') as ddf_file:
-                    #     ddf_file.next()
-                    tuples = (line.split(None) for line in ddf_file)
-                ddfdata = [[pair[k] for k in range(0,len(pair))] for pair in tuples]
-                ddf_data = np.array([np.array([float(ddfdata[i][2 * j]) for j in range(1, (len(ddfdata[i]))/2+1)]) for i in range(1, n_sel_fun_zs)])
-                # print(ddf_data)
-                # these are the recovery rates
-                sn_sel_fun_in = np.transpose(wfd_data / ddf_data)
-                # sn_sel_fun = sn_sel_fun.T
-                # print(sn_sel_fun)
-                # It's actually a big problem for the selection function to go to 0 or exceed 1.
-                # Note: these need to be normalized by survey volume so are not valid at this time!
-
-                # #need this to be # types * # z bins in shape
+        with open('data/ratios_ddf.txt', 'r') as ddf_file:
+            #     ddf_file.next()
+            tuples = (line.split(None) for line in ddf_file)
+            ddfdata = [[pair[k] for k in range(0,len(pair))] for pair in tuples]
+            ddf_data = np.array([np.array([float(ddfdata[i][2 * j]) for j in range(1, (len(ddfdata[i]))/2+1)]) for i in range(1, n_sel_fun_zs)])
+            # print(ddf_data)
+            # these are the recovery rates
+            sn_sel_fun_in = np.transpose(wfd_data / ddf_data)
+            # sn_sel_fun = sn_sel_fun.T
+            # print(sn_sel_fun)
+            # It's actually a big problem for the selection function to go to 0 or exceed 1.
+            # Note: these need to be normalized by survey volume so are not valid at this time!
+            # #need this to be # types * # z bins in shape
     sn_sel_fun_out = np.ones((n_types, n_zs-1))
     sn_sel_fun_z = nf.normalize_zt(sn_sel_fun_out, z_difs, vb=True)
 
@@ -466,6 +512,7 @@ for numit in range(numits):
     pz_sigma = 0.03
     
     pzs, ln_pzs = [], []
+
     for s in range(n_sne):
         dist = sps.norm(loc = true_params[s]['z'], scale = pz_sigma)
         pz_mean = dist.rvs()
@@ -474,9 +521,9 @@ for numit in range(numits):
         #ln_pz = new_dist.logpdf(z_mids)
         pzs.append(pz)
         #ln_pzs.append(ln_pz)
-        pzs = np.array(pzs)
-        pzs = nf.normalize_z(pzs, z_difs)
-        ln_pzs = safe_log(pzs)#np.array(ln_pzs)
+    pzs = np.array(pzs)
+    pzs = nf.normalize_z(pzs, z_difs)
+    ln_pzs = safe_log(pzs)#np.array(ln_pzs)
 
         # We emulate this using data from a realistic galaxy simulation.
         # We want the number of galaxies as a function of redshift, SED type, and luminosity.
@@ -527,7 +574,7 @@ for numit in range(numits):
     # write true hyperparameters just to check
     #d = {'b' : 1, 'a' : 0, 'c' : 2}
     truth = { 'phi': binned_n_of_z, 'model': true_model, 'vary_index': vary_model, 'data': true_params, 'id': sn_id}
-    outfile = open('data/truthfile_%s.pkl'%name_save,'wb')
+    outfile = open('data/sims/truthfile_%s.pkl'%name_save,'wb')
     pickle.dump(truth,outfile)
     outfile.close()
 
@@ -537,7 +584,7 @@ for numit in range(numits):
     output_z['host interim ln prior'] = ln_pz_interim
     output_z['ln host posterior'] = ln_host_probs
     output_z['id'] = sn_id
-    with open('data/hostzfile_%s.pkl'%name_save, 'w') as out_file:
+    with open('data/sims/hostzfile_%s.pkl'%name_save, 'w') as out_file:
         pickle.dump(output_z, out_file)
         
     # Saving the LC posterior
@@ -548,7 +595,7 @@ for numit in range(numits):
     output_lc['ln sn posterior'] = ln_sn_probs
     output_lc['id'] = sn_id
     
-    with open('data/snfile_%s.pkl'%name_save, 'w') as out_file:
+    with open('data/sims/snfile_%s.pkl'%name_save, 'w') as out_file:
         pickle.dump(output_lc, out_file)
 
     #Saving the full posterior
@@ -562,7 +609,7 @@ for numit in range(numits):
     output['ln prior info'] = safe_log(nf.normalize_one(np.exp(reg_vals(output['interim ln prior'] + output['ln selection function'])),z_difs, mu_difs))
     output['interim ln posteriors'] = interim_ln_posteriors
     output['id'] = sn_id
-    with open('data/jointfile_%s.pkl'%name_save, 'w') as out_file:
+    with open('data/sims/jointfile_%s.pkl'%name_save, 'w') as out_file:
         pickle.dump(output, out_file)
         
         
