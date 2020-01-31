@@ -17,7 +17,7 @@ import probgen as pg
 import pylab as pl
 z_sigma = 0.03
 #import hickle
-name_save_root ='scippr_sims_'
+name_save_root ='scippr_sims_testnan_'
 import os
 paths = ['data/sims', 'plots']
 if not os.path.exists('data'):
@@ -40,8 +40,7 @@ rc("text", usetex=True)
 
 # setting the iterations and the numbers
 numits = 1
-n_sne = 40 
-
+n_sne = 500 
 
 
 types = ['Ia', 'Ibc', 'II']
@@ -237,8 +236,11 @@ for numit in range(numits):
     binned_n_of_z = np.zeros((n_types, n_zs-1))
 
     rate_of_z = np.zeros((n_types, n_zs-1))
+
     for t in range(n_types):
         rate_of_z[t] = frac_types[t, np.newaxis]*true_n_of_z[t].pdf(z_mids)
+#        print(frac_types[t,np.newaxis], 'frac_types')
+#        print(true_n_of_z[t].pdf(z_mids), 'true_n_of_z')
         cdfs = true_n_of_z[t].cdf(z_bins)
         binned_n_of_z[t] = (cdfs[1:] - cdfs[:-1])
         binned_n_of_z = frac_types[t, np.newaxis]*np.array(binned_n_of_z) #
@@ -260,38 +262,35 @@ for numit in range(numits):
     pl.xlabel('z')
     pl.ylabel('relative rate')
     #pl.savefig('test_prosb.png')
-    conf_matrix = np.zeros((len(z_difs),n_types,n_types))
+    conf_matrix = epsilon*np.ones((len(z_difs),n_types,n_types))
 
+    # selecting some random probabilities to use to simulate spectroscopic subsample
     randinds_probs = random.sample(range(len(z_difs)), int(0.1*len(z_difs) ) )
     count_rpi = 0
 
 
-    # Generating new probabilities
+    # Generating probabilities from confusion matrix
+
+    confusion_matrix_allz = np.matrix([[0.92, 0.02, 0.06],[0.3, 0.44, 0.26],[0.19, 0.20, 0.81]])
+
+    # Generating new probabilities 
     for i in range(len(z_difs)):
         for t in range(n_types):
             for tt in range(n_types):
-                conf_matrix[i][t][tt] = 0.25*np.sqrt(rate_of_z[tt,i]*rate_of_z[t,i]) # taking small off diagonal
-                conf_matrix[i][t][t] = rate_of_z[t,i]
-
+                conf_matrix[i][t][tt] = confusion_matrix_allz[t,tt]
                 # Adding some "known" probabilities for both Ias and non Ias
-                if i==randinds_probs[count_rpi]:
 
-                    ti = np.random.randint(0,3)
-                    print(count_rpi, i, ti, 'weird')
-
-                    if ti==0:
-                        conf_matrix[i][ti][ti] = 1.0
-                        conf_matrix[i][ti][tt] = 0.5
-                    else:
-                        conf_matrix[i][ti][ti] = 1e-10
-                        conf_matrix[i][ti][tt] = 0.5-5e-11
+                if i==randinds_probs[count_rpi]: # if this is a spectroscopically selected object
+                    ti = np.random.randint(0,3) # now select the type of object randomly
+                    print(count_rpi, i, ti, 'SN type')
+                    # we have collapsed the probability for each type to unity now
+                    conf_matrix[i][ti][ti] = 1.0 - 1e-10 # to handle log normalisation
+                    conf_matrix[i][ti][tt] = 5e-11 #so that things are normalized in log
+                    conf_matrix[i][tt][ti] = 5e-11 #so that things are normalized in log
                     count_rpi +=1
                 
 
-
-
-
-    print((conf_matrix[0:5][:][:]))
+    print((conf_matrix[0][:][:]), 'huh')
     #np.random.rand(3,3) + (0.8 * np.eye(3))
     # RH removed this because we don't think that classifiation probabilities
     # need to know about sn type* frac_types[:, np.newaxis]
