@@ -365,7 +365,7 @@ We begin by choosing parametrizations for the true underlying parameters of inte
 	
 	\parbox{4cm}{\flushleft number of SNe per volume per redshift \\ } & \parbox{4cm}{\flushleft $\Psi$: delay time distribution} &  \parbox{4cm}{?} & \parbox{4cm}{\flushleft $K_{II}$: fraction of stars that explode as SNII \citep{Salpeter1955}} \\ 
 	{} & \parbox{4cm}{\flushleft $SFH$: cosmic star formation history} &  \parbox{4cm}{?} & \parbox{4cm}{\flushleft $SFR$: Star formation rate (\citealt{Cole2001}, \citealt{Horiuchi2011}, \citealt{Madau2014})} \\
-	{} & \parbox{4cm}{\flushleft $R_{Ia}(t) = \int_{0}^{t} S(t − \tau)\Psi(\tau)d\tau$ \cite{Graur_2013}} &  \parbox{4cm}{?} & \parbox{4cm}{\flushleft $R_{II}$ = $K_{II}$ x $SFR$} \\ \hline
+	{} & \parbox{4cm}{\flushleft $R_{Ia}(t) = \int_{0}^{t} S(t - \tau)\Psi(\tau)d\tau$ \cite{Graur_2013}} &  \parbox{4cm}{?} & \parbox{4cm}{\flushleft $R_{II}$ = $K_{II}$ x $SFR$} \\ \hline
 	
 	\parbox{4cm}{\flushleft spectral models as a function of time \\ } & SN Ia 1994D &  ? & \parbox{4cm}{\flushleft CSP-like SNe II simulated using MCMC} \\ \hline
 	
@@ -553,7 +553,13 @@ In order to estimate the observed selection function $p(\textul{\ell} | \vec{\al
 
 \begin{equation}
     \label{eq:snlcselfunwords}
-    p(t, z | \vec{\alpha}) = \frac{\quad \left\frac{N_{\mathrm{SNe,recovered}}(t,z)}{N_{\mathrm{SNe, simulated}}(t,z)}\right|_\mathrm{WFD}\quad}{\left\frac{N_{\mathrm{SNe, recovered}}(t,z)}{N_{\mathrm{SNe, simulated}}(t,z)}\right|_\mathrm{DDF}}.
+    p(t, z | \vec{\alpha}) = \frac
+    {\quad \left|\frac
+    		{N_{\mathrm{SNe,recovered}}(t,z)}
+    		{N_{\mathrm{SNe, simulated}}(t,z)}\right|_\mathrm{WFD}\quad}
+    {\left|\frac
+    	{N_{\mathrm{SNe, recovered}}(t,z)}
+    	{N_{\mathrm{SNe, simulated}}(t,z)}\right|_\mathrm{DDF}}.
 \end{equation}
 
 %Though the selection function $p(\textul{\ell} | \vec{\alpha})$ for a survey occurs in the space of lightcurves $\textul{\ell}$, it is always projected into the space of lightcurve fit parameters. 
@@ -636,7 +642,13 @@ Knowing the magnitude limits and signal-to-noise cuts of LSST's WFD and DDF surv
 We integrate these fractions over SED and take the ratio as
 \begin{equation}
     \label{eq:hostselfunwords}
-     p(t, z | \vec{\beta}) = \frac{\quad \left\frac{N_{\mathrm{gal, recovered}}(t,z)}{N_{\mathrm{gal,simulated}}(t,z)}\right|_\mathrm{WFD}\quad }{\left\frac{N_{\mathrm{gal, recovered}}(t,z)}{N_{\mathrm{gal,simulated}}(t,z)}\right|_\mathrm{DDF}}
+     p(t, z | \vec{\beta}) = \frac
+     {\quad\left|\frac
+     	{N_{\mathrm{gal, recovered}}(t,z)}
+     	{N_{\mathrm{gal,simulated}}(t,z)}\right|_\mathrm{WFD}\quad}
+     {\left|\frac
+     		{N_{\mathrm{gal, recovered}}(t,z)}
+     		{N_{\mathrm{gal,simulated}}(t,z)}\right|_\mathrm{DDF}}
    % p(z | \vec{\beta}) = \frac{\frac{\mathrm{number\ of\ recovered\ galaxies\ at\ redshift\ }z\mathrm{\ in\ WFD}}{\mathrm{number\ of\ simulated\ galaxies\ at\ redshift\ }z\mathrm{\ in\ WFD}}}{\frac{\mathrm{number\ of\ recovered\ galaxies\ at\ redshift\ }z\mathrm{\ in\ DDF}}{\mathrm{number\ of\ simulated\ galaxies\ at\ redshift\ }z\mathrm{\ in\ DDF}}}
 \end{equation}
 to obtain $p(z | \vec{\beta})$.
